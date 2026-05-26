@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🤖 钉钉万能助手体验中心 — IT部智能中枢</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0e17;
+      --bg-secondary: #121826;
+      --bg-tertiary: #1b2336;
+      --accent-color: #3b82f6;
+      --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      --cyan-gradient: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+      --purple-gradient: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%);
+      --emerald-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);
+      --rose-gradient: linear-gradient(135deg, #f43f5e 0%, #be123c 100%);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --glass-bg: rgba(18, 24, 38, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', 'Noto Sans SC', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      overflow-x: hidden;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 背景炫光装饰 */
+    .glow-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .glow-circle {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.15;
+    }
+    .glow-1 {
+      top: -10%;
+      right: 10%;
+      width: 400px;
+      height: 400px;
+      background: #3b82f6;
+    }
+    .glow-2 {
+      bottom: 10%;
+      left: -10%;
+      width: 500px;
+      height: 500px;
+      background: #a855f7;
+    }
+
+    header {
+      padding: 20px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(10, 14, 23, 0.8);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-icon {
+      font-size: 28px;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: pulse 2s infinite;
+    }
+    .logo-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      font-weight: 600;
+    }
+
+    .main-container {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 30px 40px;
+    }
+
+    @media (max-width: 1024px) {
+      .main-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ========================================= */
+    /* 左侧：钉钉对话框（iPhone 模拟器） */
+    /* ========================================= */
+    .phone-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .iphone-shell {
+      width: 100%;
+      max-width: 430px;
+      height: 820px;
+      background: #000;
+      border: 12px solid #222;
+      border-radius: 48px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 40px rgba(59, 130, 246, 0.15);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* 灵动岛 */
+    .island {
+      position: absolute;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 110px;
+      height: 30px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 50;
+    }
+
+    /* 钉钉内置顶部导航 */
+    .ding-header {
+      background: #1e293b;
+      padding: 45px 16px 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .ding-title-box {
+      text-align: center;
+      flex: 1;
+    }
+    .ding-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .ding-subtitle {
+      font-size: 10px;
+      color: #3b82f6;
+      margin-top: 2px;
+    }
+    .ding-back {
+      font-size: 14px;
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+
+    /* 对话内容区域 */
+    .chat-area {
+      flex: 1;
+      background: #0f172a;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+
+    /* 时间戳 */
+    .chat-time {
+      align-self: center;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* 对话气泡通用 */
+    .message-row {
+      display: flex;
+      gap: 10px;
+      max-width: 85%;
+    }
+    .message-user {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+      margin-left: auto;
+    }
+    .message-bot {
+      align-self: flex-start;
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .avatar-user {
+      background: var(--purple-gradient);
+    }
+    .avatar-bot {
+      background: var(--accent-gradient);
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+    }
+
+    .bubble {
+      padding: 12px 14px;
+      border-radius: 16px;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+    .bubble-user {
+      background: #3b82f6;
+      color: #fff;
+      border-top-right-radius: 4px;
+    }
+    .bubble-bot {
+      background: #1e293b;
+      color: var(--text-main);
+      border-top-left-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    /* 卡片式消息 */
+    .card-message {
+      background: #1e293b;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      width: 290px;
+      overflow: hidden;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    }
+    .card-header {
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-header.blue-bar { background: rgba(59, 130, 246, 0.2); border-bottom: 2px solid #3b82f6; }
+    .card-header.green-bar { background: rgba(16, 185, 129, 0.2); border-bottom: 2px solid #10b981; }
+    .card-header.purple-bar { background: rgba(168, 85, 247, 0.2); border-bottom: 2px solid #a855f7; }
+    .card-header.orange-bar { background: rgba(249, 115, 22, 0.2); border-bottom: 2px solid #f97316; }
+
+    .card-body {
+      padding: 14px;
+      font-size: 12.5px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .card-item {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.04);
+      padding-bottom: 6px;
+    }
+    .card-item:last-child {
+      border: none;
+      padding-bottom: 0;
+    }
+    .card-label {
+      color: var(--text-muted);
+    }
+    .card-value {
+      font-weight: 500;
+      text-align: right;
+    }
+    .status-badge {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .status-ok { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .status-warn { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+    /* 进度条 */
+    .progress-bar-container {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      margin-top: 4px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 10px;
+      width: 0;
+      transition: width 1.5s ease-out;
+    }
+
+    /* 模拟输入框 */
+    .ding-footer {
+      background: #1e293b;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 24px; /* 留出底部横条空间 */
+    }
+
+    .keyboard-container {
+      display: flex;
+      gap: 8px;
+    }
+    .chat-input {
+      flex: 1;
+      height: 38px;
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 0 16px;
+      color: #fff;
+      font-size: 13.5px;
+      outline: none;
+    }
+    .send-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--accent-gradient);
+      border: none;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    /* 快捷指令指令盘 */
+    .quick-commands {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .quick-commands::-webkit-scrollbar {
+      display: none;
+    }
+    .cmd-tag {
+      white-space: nowrap;
+      padding: 6px 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 11px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .cmd-tag:hover {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: rgba(59, 130, 246, 0.3);
+      color: #60a5fa;
+    }
+
+    /* 苹果底部小横条 */
+    .home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 140px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 10px;
+      pointer-events: none;
+    }
+
+    /* 打字动画效果 */
+    .typing-dots {
+      display: flex;
+      gap: 4px;
+      padding: 4px 6px;
+      align-items: center;
+      height: 12px;
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      animation: wave 1.2s infinite;
+    }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    /* ========================================= */
+    /* 右侧：IT 智能中枢大脑后台监视器 */
+    /* ========================================= */
+    .dashboard-container {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .panel {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 24px;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .panel-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .panel-title i {
+      font-style: normal;
+    }
+
+    /* 运行架构拓扑 */
+    .topology {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 10px;
+    }
+    .topo-node {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      transition: all 0.3s;
+    }
+    .topo-node.active {
+      background: rgba(59, 130, 246, 0.08);
+      border-color: rgba(59, 130, 246, 0.3);
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.1);
+    }
+    .topo-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .topo-node.active .topo-icon {
+      background: var(--accent-gradient);
+    }
+    .topo-info {
+      flex: 1;
+    }
+    .topo-name {
+      font-size: 13.5px;
+      font-weight: 600;
+    }
+    .topo-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .topo-status {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .topo-node.active .topo-status {
+      color: #60a5fa;
+    }
+
+    /* 动态控制台日志 */
+    .console-box {
+      background: #060913;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 14px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 11px;
+      color: #38bdf8;
+      height: 180px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.8);
+    }
+
+    .log-line {
+      display: flex;
+      gap: 8px;
+    }
+    .log-time {
+      color: #64748b;
+      flex-shrink: 0;
+    }
+    .log-content {
+      word-break: break-all;
+    }
+    .log-success { color: #4ade80; }
+    .log-info { color: #38bdf8; }
+    .log-warn { color: #facc15; }
+
+    /* 说明与对比板 */
+    .explain-card {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(168, 85, 247, 0.05) 100%);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .explain-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #93c5fd;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .explain-p {
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: #d1d5db;
+    }
+
+    /* 动画 */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.8; transform: scale(1.05); }
+    }
+
+    @keyframes wave {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .image-message {
+      width: 290px;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+    }
+    .image-message img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="glow-container">
+    <div class="glow-circle glow-1"></div>
+    <div class="glow-circle glow-2"></div>
+  </div>
+
+  <header>
+    <div class="logo-container">
+      <div class="logo-icon">🤖</div>
+      <div>
+        <div class="logo-title">钉钉智能助手 — 概念与交互沙盒</div>
+        <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">DingTalk IT Agent Sandbox</div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <span class="badge">Stream 长连接接入</span>
+      <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">在线联通中</span>
+    </div>
+  </header>
+
+  <div class="main-container">
+    
+    <!-- 左侧：钉钉手机交互模拟器 -->
+    <div class="phone-container">
+      <div class="iphone-shell">
+        <div class="island"></div>
+        
+        <!-- 钉钉聊天栏头部 -->
+        <div class="ding-header">
+          <div class="ding-back">◀ 消息</div>
+          <div class="ding-title-box">
+            <div class="ding-title">IT万能助手 🤖</div>
+            <div class="ding-subtitle">在线 • 已打通中枢自动化</div>
+          </div>
+          <div style="font-size: 18px; color: var(--text-muted); cursor: pointer;">⋮</div>
+        </div>
+        
+        <!-- 聊天气泡滚动区 -->
+        <div class="chat-area" id="chatArea">
+          <div class="chat-time">下午 15:28</div>
+          
+          <div class="message-row message-bot">
+            <div class="avatar avatar-bot">🤖</div>
+            <div class="bubble bubble-bot">
+              您好，我是 <b>IT部门智能助手</b>！我已经成功绑定了您的 <code>desktop-controller</code> 桌面主控机，并连接了 <code>数据处理中心</code> 引擎。
+              <br><br>
+              请在下方点击快捷指令，体验我是如何帮您自动化解决问题的！👇
+            </div>
+          </div>
+        </div>
+        
+        <!-- 钉钉底部输入及快捷指令 -->
+        <div class="ding-footer">
+          <!-- 快捷指令栏 -->
+          <div class="quick-commands">
+            <div class="cmd-tag" onclick="triggerCommand('project')">📋 查项目进度</div>
+            <div class="cmd-tag" onclick="triggerCommand('status')">📡 系统健康巡检</div>
+            <div class="cmd-tag" onclick="triggerCommand('screenshot')">🖥️ 服务器截屏</div>
+            <div class="cmd-tag" onclick="triggerCommand('clean')">📊 提取并合并表格</div>
+            <div class="cmd-tag" onclick="triggerCommand('help')">❓ 帮助手册</div>
+          </div>
+          
+          <!-- 键盘输入框 -->
+          <div class="keyboard-container">
+            <input type="text" class="chat-input" id="chatInput" placeholder="输入指令，如：截个屏..." onkeypress="handleKeyPress(event)">
+            <button class="send-btn" onclick="sendCustomMessage()">▶</button>
+          </div>
+        </div>
+        
+        <div class="home-indicator"></div>
+      </div>
+    </div>
+
+    <!-- 右侧：中枢后台监视器 -->
+    <div class="dashboard-container">
+      
+      <!-- 架构工作指示图 -->
+      <div class="panel">
+        <div class="panel-title"><i>⚙️</i> IT 智能中枢路由节点</div>
+        <div class="topology">
+          <div class="topo-node" id="node-ding">
+            <div class="topo-icon">📱</div>
+            <div class="topo-info">
+              <div class="topo-name">钉钉群 / Stream 桥梁</div>
+              <div class="topo-desc">负责接收指令、渲染卡片响应，并通过 WebSocket 发往主机</div>
+            </div>
+            <div class="topo-status" id="status-ding">就绪</div>
+          </div>
+          
+          <div class="topo-node" id="node-agent">
+            <div class="topo-icon">🧠</div>
+            <div class="topo-info">
+              <div class="topo-name">AI 指令分析器 (CommandParser)</div>
+              <div class="topo-desc">利用大语言模型或正则规则解析意图，自动分流到具体任务</div>
+            </div>
+            <div class="topo-status" id="status-agent">就绪</div>
+          </div>
+          
+          <div class="topo-node" id="node-executor">
+            <div class="topo-icon">💻</div>
+            <div class="topo-info">
+              <div class="topo-name">桌面自动化执行引擎 (desktop-controller)</div>
+              <div class="topo-desc">操控 ERP、截图、模拟键盘鼠标操作、生成/读取本地文件</div>
+            </div>
+            <div class="topo-status" id="status-executor">就绪</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 控制台日志 -->
+      <div class="panel">
+        <div class="panel-title"><i>📟</i> 实时运行日志 (Terminal Logs)</div>
+        <div class="console-box" id="consoleLogs">
+          <div class="log-line">
+            <span class="log-time">[15:28:04]</span>
+            <span class="log-content log-info">Bot Handler 成功与钉钉 WebSocket 握手建立连接</span>
+          </div>
+          <div class="log-line">
+            <span class="log-time">[15:28:04]</span>
+            <span class="log-content log-info">监听端口：localhost:8899 ... 桥梁已就绪</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 价值对比看板 -->
+      <div class="panel explain-card">
+        <div class="explain-title">💡 为什么这个“万能助手”威力极大？</div>
+        <p class="explain-p">
+          因为<b>“钉钉是移动办公的第一现场”</b>。此前开发的数据处理中心、系统监控，通常需要我们走到电脑前、打开浏览器才能用。
+          而通过长连接把这些系统桥接到钉钉上以后，<b>你只需要在手机钉钉里发个消息，机器人在几秒钟内替你在局域网/服务器内操作完毕，并将截图和报表直接塞回你手中。</b>
+          <br><br>
+          在任何地方，只要掏出手机，你就拥有了对 IT 部门所有系统和数据的<b>“绝对掌控力”</b>。
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const chatArea = document.getElementById('chatArea');
+    const chatInput = document.getElementById('chatInput');
+    const consoleLogs = document.getElementById('consoleLogs');
+
+    // 路由节点元素
+    const nodeDing = document.getElementById('node-ding');
+    const nodeAgent = document.getElementById('node-agent');
+    const nodeExecutor = document.getElementById('node-executor');
+
+    const statusDing = document.getElementById('status-ding');
+    const statusAgent = document.getElementById('status-agent');
+    const statusExecutor = document.getElementById('status-executor');
+
+    function formatTime() {
+      const now = new Date();
+      return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+    }
+
+    function addLog(text, type = 'info') {
+      const line = document.createElement('div');
+      line.className = 'log-line';
+      let typeClass = 'log-info';
+      if (type === 'success') typeClass = 'log-success';
+      if (type === 'warn') typeClass = 'log-warn';
+
+      line.innerHTML = `
+        <span class="log-time">[${formatTime()}]</span>
+        <span class="log-content ${typeClass}">${text}</span>
+      `;
+      consoleLogs.appendChild(line);
+      consoleLogs.scrollTop = consoleLogs.scrollHeight;
+    }
+
+    function setNodeState(node, statusEl, state, text) {
+      if (state === 'active') {
+        node.classList.add('active');
+        statusEl.textContent = text;
+      } else {
+        node.classList.remove('active');
+        statusEl.textContent = '就绪';
+      }
+    }
+
+    function appendUserMessage(text) {
+      const row = document.createElement('div');
+      row.className = 'message-row message-user';
+      row.innerHTML = `
+        <div class="avatar avatar-user">👤</div>
+        <div class="bubble bubble-user">${text}</div>
+      `;
+      chatArea.appendChild(row);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function appendBotTyping() {
+      const row = document.createElement('div');
+      row.className = 'message-row message-bot';
+      row.id = 'typingLoader';
+      row.innerHTML = `
+        <div class="avatar avatar-bot">🤖</div>
+        <div class="bubble bubble-bot">
+          <div class="typing-dots">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+        </div>
+      `;
+      chatArea.appendChild(row);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function removeBotTyping() {
+      const loader = document.getElementById('typingLoader');
+      if (loader) {
+        loader.remove();
+      }
+    }
+
+    function appendBotText(text) {
+      const row = document.createElement('div');
+      row.className = 'message-row message-bot';
+      row.innerHTML = `
+        <div class="avatar avatar-bot">🤖</div>
+        <div class="bubble bubble-bot">${text}</div>
+      `;
+      chatArea.appendChild(row);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function handleKeyPress(e) {
+      if (e.key === 'Enter') {
+        sendCustomMessage();
+      }
+    }
+
+    function sendCustomMessage() {
+      const text = chatInput.value.trim();
+      if (!text) return;
+      
+      appendUserMessage(text);
+      chatInput.value = '';
+
+      // 智能匹配或模拟响应
+      processMessageWorkflow(text);
+    }
+
+    function triggerCommand(cmdKey) {
+      let text = '';
+      if (cmdKey === 'project') text = '📋 查项目进度';
+      if (cmdKey === 'status') text = '📡 检查系统状态';
+      if (cmdKey === 'screenshot') text = '🖥️ 截个屏看看';
+      if (cmdKey === 'clean') text = '📊 帮我把刚才的表格匹配下';
+      if (cmdKey === 'help') text = '帮助';
+
+      appendUserMessage(text);
+      processMessageWorkflow(text, cmdKey);
+    }
+
+    function processMessageWorkflow(text, presetKey = null) {
+      // 1. 钉钉收到消息
+      setNodeState(nodeDing, statusDing, 'active', '收到事件');
+      addLog(`收到钉钉消息事件: "${text}"`, 'info');
+
+      // 2. 延迟 600ms 分析意图
+      setTimeout(() => {
+        setNodeState(nodeDing, statusDing, 'idle');
+        setNodeState(nodeAgent, statusAgent, 'active', '正在解析');
+        addLog(`🧠 AI 分析器正在抽取语义并判断操作分支...`, 'info');
+        appendBotTyping();
+
+        // 根据指令类型分配动作
+        setTimeout(() => {
+          setNodeState(nodeAgent, statusAgent, 'idle');
+          setNodeState(nodeExecutor, statusExecutor, 'active', '正在操控电脑');
+
+          // 分流处理模拟
+          if (presetKey === 'project' || text.includes('进度') || text.includes('项目') || text.includes('看板')) {
+            runProjectWorkflow();
+          } else if (presetKey === 'status' || text.includes('系统') || text.includes('健康') || text.includes('巡检')) {
+            runStatusWorkflow();
+          } else if (presetKey === 'screenshot' || text.includes('截屏') || text.includes('截图') || text.includes('屏幕')) {
+            runScreenshotWorkflow();
+          } else if (presetKey === 'clean' || text.includes('表') || text.includes('匹配') || text.includes('Excel')) {
+            runExcelWorkflow();
+          } else {
+            runHelpWorkflow(text);
+          }
+
+        }, 1000);
+
+      }, 600);
+    }
+
+    // --- 各个指令具体的演示卡片输出 ---
+
+    function runProjectWorkflow() {
+      addLog(`💻 desktop-controller: 正在读取 IT看板 项目存储数据...`, 'info');
+      
+      setTimeout(() => {
+        removeBotTyping();
+        addLog(`✅ 成功获取看板数据。正在拼装钉钉高级富文本卡片...`, 'success');
+        setNodeState(nodeExecutor, statusExecutor, 'idle');
+
+        const cardRow = document.createElement('div');
+        cardRow.className = 'message-row message-bot';
+        cardRow.innerHTML = `
+          <div class="avatar avatar-bot">🤖</div>
+          <div class="card-message">
+            <div class="card-header blue-bar">📋 IT 看板项目进度汇总</div>
+            <div class="card-body">
+              <div class="card-item">
+                <span class="card-label">进行中项目</span>
+                <span class="card-value" style="color: #60a5fa;">5 个</span>
+              </div>
+              <div class="card-item">
+                <span class="card-label">本周已完成</span>
+                <span class="card-value" style="color: #34d399;">3 个</span>
+              </div>
+              <div class="card-item" style="flex-direction: column; gap: 4px;">
+                <div style="display:flex; justify-content:space-between;">
+                  <span class="card-label">📊 智能匹配搜索下拉功能</span>
+                  <span class="card-value" style="color:#34d399">100% 已发布</span>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-fill" style="background:#10b981; width: 100%"></div>
+                </div>
+              </div>
+              <div class="card-item" style="flex-direction: column; gap: 4px;">
+                <div style="display:flex; justify-content:space-between;">
+                  <span class="card-label">📱 钉钉助手体验馆 demo</span>
+                  <span class="card-value" style="color:#60a5fa">80% 演练中</span>
+                </div>
+                <div class="progress-bar-container">
+                  <div class="progress-fill" style="background:#3b82f6; width: 80%"></div>
+                </div>
+              </div>
+              <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 5px;">
+                数据来源：IT 看板实时数据仓
+              </div>
+            </div>
+          </div>
+        `;
+        chatArea.appendChild(cardRow);
+        chatArea.scrollTop = chatArea.scrollHeight;
+      }, 1000);
+    }
+
+    function runStatusWorkflow() {
+      addLog(`💻 openclaw-monitor: 触发全网段 HTTP 健康主动探测...`, 'info');
+      
+      setTimeout(() => {
+        removeBotTyping();
+        addLog(`📡 全系统巡检通过，发现 1 项告警已被网关守护进程成功拦截处理。`, 'warn');
+        setNodeState(nodeExecutor, statusExecutor, 'idle');
+
+        const cardRow = document.createElement('div');
+        cardRow.className = 'message-row message-bot';
+        cardRow.innerHTML = `
+          <div class="avatar avatar-bot">🤖</div>
+          <div class="card-message">
+            <div class="card-header green-bar">📡 IT 系统每日健康巡检报告</div>
+            <div class="card-body">
+              <div class="card-item">
+                <span class="card-label">金蝶 ERP 财务服务</span>
+                <span class="status-badge status-ok">🟢 正常运行</span>
+              </div>
+              <div class="card-item">
+                <span class="card-label">OA 办公流审批网关</span>
+                <span class="status-badge status-ok">🟢 正常运行</span>
+              </div>
+              <div class="card-item">
+                <span class="card-label">公网 GitHub Pages 服务</span>
+                <span class="status-badge status-ok">🟢 200 OK</span>
+              </div>
+              <div class="card-item">
+                <span class="card-label">内网核心 API 代理网关</span>
+                <span class="status-badge status-warn">🟡 曾异常, 守护自动重启成功</span>
+              </div>
+              <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 5px;">
+                巡检生成时间：刚才
+              </div>
+            </div>
+          </div>
+        `;
+        chatArea.appendChild(cardRow);
+        chatArea.scrollTop = chatArea.scrollHeight;
+      }, 1000);
+    }
+
+    function runScreenshotWorkflow() {
+      addLog(`💻 desktop-controller: 正在捕获 macOS 当前屏幕画面并进行降噪压缩...`, 'info');
+      
+      setTimeout(() => {
+        removeBotTyping();
+        addLog(`✅ 屏幕截图上传至钉钉多媒体媒体库，成功返回 Media_ID`, 'success');
+        setNodeState(nodeExecutor, statusExecutor, 'idle');
+
+        const cardRow = document.createElement('div');
+        cardRow.className = 'message-row message-bot';
+        cardRow.innerHTML = `
+          <div class="avatar avatar-bot">🤖</div>
+          <div class="bubble bubble-bot" style="display:flex; flex-direction:column; gap:8px">
+            <div>📸 <b>已为您实时截取服务器桌面（捕获时间: 刚刚）：</b></div>
+            <div class="image-message">
+              <img src="screenshot_home.png" alt="模拟桌面截图" onerror="this.src='https://images.unsplash.com/photo-1542744094-3a31f103e35f?auto=format&fit=crop&w=500&q=80'">
+            </div>
+            <div style="font-size:10px; color:var(--text-muted)">💡 您可以直接通过对话框发送“点击 450, 200”来控制这个屏幕的鼠标！</div>
+          </div>
+        `;
+        chatArea.appendChild(cardRow);
+        chatArea.scrollTop = chatArea.scrollHeight;
+      }, 1200);
+    }
+
+    function runExcelWorkflow() {
+      addLog(`💻 数据处理中心引擎: 启动 pandas 匹配计算模块，导入数据源...`, 'info');
+      
+      setTimeout(() => {
+        removeBotTyping();
+        addLog(`✅ Pandas 库自动运行完毕。以最优算力完成 61 列仓库条目的完美匹配！`, 'success');
+        setNodeState(nodeExecutor, statusExecutor, 'idle');
+
+        const cardRow = document.createElement('div');
+        cardRow.className = 'message-row message-bot';
+        cardRow.innerHTML = `
+          <div class="avatar avatar-bot">🤖</div>
+          <div class="card-message">
+            <div class="card-header purple-bar">📊 数据表自动合并完成</div>
+            <div class="card-body">
+              <div class="card-item">
+                <span class="card-label">处理类型</span>
+                <span class="card-value">源表 $\\leftrightarrow$ 目标表 智能关联</span>
+              </div>
+              <div class="card-item">
+                <span class="card-label">匹配行数</span>
+                <span class="card-value" style="color: #34d399">1158 行完美匹配</span>
+              </div>
+              <div class="card-item">
+                <span class="card-label">数据漏失率</span>
+                <span class="card-value" style="color: #34d399">0.00%</span>
+              </div>
+              <div class="card-item" style="border:none">
+                <span class="card-label">📂 处理好的结果：</span>
+                <a href="#" style="color:#60a5fa; text-decoration:none; font-weight:600">点击下载.xlsx</a>
+              </div>
+              <div style="font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 5px;">
+                依托「数据处理中心」底层引擎执行
+              </div>
+            </div>
+          </div>
+        `;
+        chatArea.appendChild(cardRow);
+        chatArea.scrollTop = chatArea.scrollHeight;
+      }, 1500);
+    }
+
+    function runHelpWorkflow(text) {
+      setTimeout(() => {
+        removeBotTyping();
+        addLog(`⚠️ 意图未完全命中，返回帮助菜单列表`, 'warn');
+        setNodeState(nodeExecutor, statusExecutor, 'idle');
+
+        appendBotText(`
+          🤖 <b>IT 万能助手 — 提示菜单：</b>
+          <br><br>
+          目前为您对接的 <b>macOS 控制主机</b> 状态良好，已加载以下技能模块：
+          <br><br>
+          • 发送 <b>"查进度"</b> 📋 $\rightarrow$ 查询当前部门 IT 看板最新项目进度
+          <br><br>
+          • 发送 <b>"巡检"</b> 📡 $\rightarrow$ 驱动网关守护程序扫描所有应用可用性
+          <br><br>
+          • 发送 <b>"截图"</b> 🖥️ $\rightarrow$ 获取服务器桌面的实时快照图像
+          <br><br>
+          • 发送 <b>"帮助"</b> ❓ $\rightarrow$ 调出此菜单面板
+        `);
+      }, 800);
+    }
+  </script>
+</body>
+</html>
