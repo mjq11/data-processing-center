@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>数据处理中心 — IT部效率工具</title>
+  <meta name="description" content="IT部门数据自动化处理中心，一站式 Excel/CSV 数据处理工具箱" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=2" />
+</head>
+<body>
+  <!-- 全局顶栏 -->
+  <header class="topbar" id="topbar">
+    <div class="topbar-left">
+      <div class="logo" id="logo">
+        <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+          <rect width="30" height="30" rx="8" fill="url(#lg-dc)"/>
+          <path d="M7 8h7v7H7zM16 8h7v7h-7zM7 16h7v6H7z" stroke="#fff" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
+          <rect x="17" y="17" width="5" height="4" rx="1" fill="#fff" opacity=".9"/>
+          <defs><linearGradient id="lg-dc" x1="0" y1="0" x2="30" y2="30"><stop stop-color="#5b5fc7"/><stop offset="1" stop-color="#8e4ec6"/></linearGradient></defs>
+        </svg>
+        <span>数据处理中心</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="btn-icon" id="btn-theme" title="切换主题">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ======== 首页视图 ======== -->
+  <div class="main-container" id="view-home">
+    <section class="hero-section">
+      <h1 class="hero-title">
+        <span class="gradient-text">智能数据处理</span>，一键搞定
+      </h1>
+      <p class="hero-subtitle">拖拽上传 Excel / CSV 文件，选择处理工具，秒出结果。告别重复操作，释放你的时间。</p>
+    </section>
+
+    <!-- 功能卡片 -->
+    <div class="tool-grid" id="tool-grid">
+      <div class="tool-card" data-tool="match" id="card-match">
+        <div class="tool-card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+        </div>
+        <h3>智能匹配</h3>
+        <p>两表关联匹配，根据关键列自动匹配并填充数据</p>
+        <div class="tool-card-tag">⚡ 高频使用</div>
+      </div>
+      <div class="tool-card" data-tool="convert" id="card-convert">
+        <div class="tool-card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        </div>
+        <h3>格式转换</h3>
+        <p>Excel ↔ CSV ↔ JSON 一键互转，自由切换数据格式</p>
+        <div class="tool-card-tag">🔄 格式互转</div>
+      </div>
+      <div class="tool-card" data-tool="clean" id="card-clean">
+        <div class="tool-card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3>数据清洗</h3>
+        <p>去重、去空行、去首尾空格、格式统一等一键处理</p>
+        <div class="tool-card-tag">🧹 批量清理</div>
+      </div>
+      <div class="tool-card" data-tool="merge" id="card-merge">
+        <div class="tool-card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="8" height="8" rx="1"/><rect x="14" y="3" width="8" height="8" rx="1"/><rect x="8" y="13" width="8" height="8" rx="1"/><path d="M6 11v2a2 2 0 0 0 2 2M18 11v2a2 2 0 0 1-2 2"/></svg>
+        </div>
+        <h3>报表合并</h3>
+        <p>将多个 Excel 文件或多个 Sheet 合并为一份汇总表</p>
+        <div class="tool-card-tag">📊 多表合一</div>
+      </div>
+      <div class="tool-card" data-tool="diff" id="card-diff">
+        <div class="tool-card-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18"/><circle cx="7" cy="7" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+        </div>
+        <h3>数据比对</h3>
+        <p>对比两份表格的差异，高亮新增、修改、删除的行</p>
+        <div class="tool-card-tag">🔍 差异发现</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 智能匹配工具视图 ======== -->
+  <div class="main-container tool-view" id="view-match">
+    <button class="tool-back-btn" id="match-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      返回首页
+    </button>
+    <div class="tool-header">
+      <div class="tool-header-icon" style="background:var(--blue-soft);color:var(--blue)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+      </div>
+      <div class="tool-header-info">
+        <h2>智能匹配</h2>
+        <p>上传两份表格，选择匹配列和填充列，自动匹配并填充</p>
+      </div>
+    </div>
+
+    <!-- 步骤1：上传 -->
+    <div class="dual-upload">
+      <div>
+        <div class="upload-label">📋 源数据表（提供匹配数据）</div>
+        <div class="upload-zone" id="match-upload-source">
+          <div class="upload-zone-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          </div>
+          <h3>拖拽上传或 <em>点击选择</em></h3>
+          <p>支持 .xlsx / .xls / .csv</p>
+          <input type="file" id="match-file-source" accept=".xlsx,.xls,.csv" />
+          <div class="uploaded-files" id="match-files-source"></div>
+        </div>
+      </div>
+      <div>
+        <div class="upload-label">📝 目标表（需要填充数据）</div>
+        <div class="upload-zone" id="match-upload-target">
+          <div class="upload-zone-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          </div>
+          <h3>拖拽上传或 <em>点击选择</em></h3>
+          <p>支持 .xlsx / .xls / .csv</p>
+          <input type="file" id="match-file-target" accept=".xlsx,.xls,.csv" />
+          <div class="uploaded-files" id="match-files-target"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 步骤2：配置匹配规则 -->
+    <div class="config-panel" id="match-config" style="display:none">
+      <h3>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        匹配规则配置
+      </h3>
+
+      <!-- Sheet 选择 -->
+      <div class="config-grid" style="margin-bottom:14px">
+        <div class="config-item">
+          <label>源数据表 Sheet</label>
+          <select id="match-source-sheet"></select>
+        </div>
+        <div class="config-item">
+          <label>目标表 Sheet</label>
+          <select id="match-target-sheet"></select>
+        </div>
+      </div>
+
+      <!-- 匹配键 -->
+      <div style="margin-bottom:12px">
+        <div class="upload-label">🔑 匹配键（关联两表的列）</div>
+        <div class="match-rule">
+          <div>
+            <span class="match-rule-label">源表列</span>
+            <div id="match-source-key"></div>
+          </div>
+          <span class="match-rule-arrow">⟷</span>
+          <div>
+            <span class="match-rule-label">目标表列</span>
+            <div id="match-target-key"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 填充规则 -->
+      <div>
+        <div class="upload-label">📝 填充规则（将源表的列填入目标表）</div>
+        <div class="fill-rules" id="match-fill-rules"></div>
+        <button class="add-rule-btn" id="match-add-rule">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          添加填充规则
+        </button>
+      </div>
+    </div>
+
+    <!-- 操作栏 -->
+    <div class="action-bar" id="match-action-bar" style="display:none">
+      <div class="action-bar-left">
+        <button class="btn btn-primary btn-shine" id="match-execute" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          执行匹配
+        </button>
+      </div>
+      <div class="action-bar-right">
+        <button class="btn btn-success" id="match-download" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          下载结果
+        </button>
+      </div>
+    </div>
+
+    <!-- 结果统计 -->
+    <div class="result-stats" id="match-result-stats" style="display:none"></div>
+
+    <!-- 预览 -->
+    <div class="preview-section" id="match-preview" style="display:none">
+      <div class="preview-header">
+        <h3>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          数据预览
+        </h3>
+        <div class="preview-stats" id="match-preview-stats"></div>
+      </div>
+      <div class="preview-table-wrap">
+        <table class="preview-table" id="match-preview-table">
+          <thead id="match-preview-thead"></thead>
+          <tbody id="match-preview-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 格式转换工具视图 ======== -->
+  <div class="main-container tool-view" id="view-convert">
+    <button class="tool-back-btn" id="convert-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      返回首页
+    </button>
+    <div class="tool-header">
+      <div class="tool-header-icon" style="background:var(--green-soft);color:var(--green)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+      </div>
+      <div class="tool-header-info">
+        <h2>格式转换</h2>
+        <p>上传文件，选择目标格式，一键转换下载</p>
+      </div>
+    </div>
+
+    <div class="upload-zone" id="convert-upload">
+      <div class="upload-zone-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      </div>
+      <h3>拖拽上传或 <em>点击选择</em></h3>
+      <p>支持 .xlsx / .xls / .csv / .json</p>
+      <input type="file" id="convert-file" accept=".xlsx,.xls,.csv,.json" />
+      <div class="uploaded-files" id="convert-files"></div>
+    </div>
+
+    <div class="config-panel" id="convert-config" style="display:none">
+      <h3>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        转换设置
+      </h3>
+      <div class="config-grid">
+        <div class="config-item">
+          <label>选择 Sheet</label>
+          <select id="convert-sheet"></select>
+        </div>
+        <div class="config-item">
+          <label>目标格式</label>
+          <select id="convert-format">
+            <option value="xlsx">Excel (.xlsx)</option>
+            <option value="csv">CSV (.csv)</option>
+            <option value="json">JSON (.json)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar" id="convert-action-bar" style="display:none">
+      <div class="action-bar-left">
+        <button class="btn btn-primary btn-shine" id="convert-execute">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/></svg>
+          转换并下载
+        </button>
+      </div>
+    </div>
+
+    <div class="preview-section" id="convert-preview" style="display:none">
+      <div class="preview-header">
+        <h3>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          数据预览
+        </h3>
+        <div class="preview-stats" id="convert-preview-stats"></div>
+      </div>
+      <div class="preview-table-wrap">
+        <table class="preview-table" id="convert-preview-table">
+          <thead id="convert-preview-thead"></thead>
+          <tbody id="convert-preview-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 数据清洗工具视图 ======== -->
+  <div class="main-container tool-view" id="view-clean">
+    <button class="tool-back-btn" id="clean-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      返回首页
+    </button>
+    <div class="tool-header">
+      <div class="tool-header-icon" style="background:var(--orange-soft);color:var(--orange)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+      </div>
+      <div class="tool-header-info">
+        <h2>数据清洗</h2>
+        <p>选择清洗规则，一键批量清理脏数据</p>
+      </div>
+    </div>
+
+    <div class="upload-zone" id="clean-upload">
+      <div class="upload-zone-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      </div>
+      <h3>拖拽上传或 <em>点击选择</em></h3>
+      <p>支持 .xlsx / .xls / .csv</p>
+      <input type="file" id="clean-file" accept=".xlsx,.xls,.csv" />
+      <div class="uploaded-files" id="clean-files"></div>
+    </div>
+
+    <div class="config-panel" id="clean-config" style="display:none">
+      <h3>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+        选择清洗规则
+      </h3>
+      <div class="config-grid" style="margin-bottom:12px">
+        <div class="config-item">
+          <label>选择 Sheet</label>
+          <select id="clean-sheet"></select>
+        </div>
+      </div>
+      <div class="clean-options" id="clean-options">
+        <label class="clean-option selected" data-rule="trim">
+          <input type="checkbox" checked />
+          <div class="clean-cb"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="clean-option-info">
+            <h4>去除首尾空格</h4>
+            <p>清除所有单元格的首尾空白字符</p>
+          </div>
+        </label>
+        <label class="clean-option" data-rule="empty-rows">
+          <input type="checkbox" />
+          <div class="clean-cb"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="clean-option-info">
+            <h4>删除空行</h4>
+            <p>移除所有列都为空的行</p>
+          </div>
+        </label>
+        <label class="clean-option" data-rule="duplicates">
+          <input type="checkbox" />
+          <div class="clean-cb"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="clean-option-info">
+            <h4>删除重复行</h4>
+            <p>基于所有列内容去重，保留首次出现的行</p>
+          </div>
+        </label>
+        <label class="clean-option" data-rule="normalize-spaces">
+          <input type="checkbox" />
+          <div class="clean-cb"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="clean-option-info">
+            <h4>合并多余空格</h4>
+            <p>将单元格中连续的多个空格合并为一个</p>
+          </div>
+        </label>
+        <label class="clean-option" data-rule="newlines">
+          <input type="checkbox" />
+          <div class="clean-cb"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></div>
+          <div class="clean-option-info">
+            <h4>去除换行符</h4>
+            <p>将单元格中的换行符替换为空格</p>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <div class="action-bar" id="clean-action-bar" style="display:none">
+      <div class="action-bar-left">
+        <button class="btn btn-primary btn-shine" id="clean-execute">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          执行清洗
+        </button>
+      </div>
+      <div class="action-bar-right">
+        <button class="btn btn-success" id="clean-download" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          下载结果
+        </button>
+      </div>
+    </div>
+
+    <div class="result-stats" id="clean-result-stats" style="display:none"></div>
+
+    <div class="preview-section" id="clean-preview" style="display:none">
+      <div class="preview-header">
+        <h3>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          清洗结果预览
+        </h3>
+        <div class="preview-stats" id="clean-preview-stats"></div>
+      </div>
+      <div class="preview-table-wrap">
+        <table class="preview-table" id="clean-preview-table">
+          <thead id="clean-preview-thead"></thead>
+          <tbody id="clean-preview-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 报表合并工具视图 ======== -->
+  <div class="main-container tool-view" id="view-merge">
+    <button class="tool-back-btn" id="merge-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      返回首页
+    </button>
+    <div class="tool-header">
+      <div class="tool-header-icon" style="background:var(--purple-soft);color:var(--purple)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="8" height="8" rx="1"/><rect x="14" y="3" width="8" height="8" rx="1"/><rect x="8" y="13" width="8" height="8" rx="1"/><path d="M6 11v2a2 2 0 0 0 2 2M18 11v2a2 2 0 0 1-2 2"/></svg>
+      </div>
+      <div class="tool-header-info">
+        <h2>报表合并</h2>
+        <p>上传多个文件，选择合并方式，一键汇总</p>
+      </div>
+    </div>
+
+    <div class="upload-zone" id="merge-upload">
+      <div class="upload-zone-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      </div>
+      <h3>拖拽上传或 <em>点击选择</em>（支持多选）</h3>
+      <p>支持 .xlsx / .xls / .csv，可同时上传多个文件</p>
+      <input type="file" id="merge-file" accept=".xlsx,.xls,.csv" multiple />
+      <div class="uploaded-files" id="merge-files"></div>
+    </div>
+
+    <div class="config-panel" id="merge-config" style="display:none">
+      <h3>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09"/></svg>
+        合并设置
+      </h3>
+      <div class="config-grid">
+        <div class="config-item">
+          <label>合并方式</label>
+          <select id="merge-mode">
+            <option value="append">纵向追加（行合并）</option>
+            <option value="sheets">合并所有 Sheet</option>
+          </select>
+        </div>
+        <div class="config-item">
+          <label>表头处理</label>
+          <select id="merge-header">
+            <option value="first">仅保留第一个文件的表头</option>
+            <option value="all">每个文件都保留表头</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar" id="merge-action-bar" style="display:none">
+      <div class="action-bar-left">
+        <button class="btn btn-primary btn-shine" id="merge-execute">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          执行合并
+        </button>
+      </div>
+      <div class="action-bar-right">
+        <button class="btn btn-success" id="merge-download" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          下载结果
+        </button>
+      </div>
+    </div>
+
+    <div class="result-stats" id="merge-result-stats" style="display:none"></div>
+
+    <div class="preview-section" id="merge-preview" style="display:none">
+      <div class="preview-header">
+        <h3>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          合并结果预览
+        </h3>
+        <div class="preview-stats" id="merge-preview-stats"></div>
+      </div>
+      <div class="preview-table-wrap">
+        <table class="preview-table" id="merge-preview-table">
+          <thead id="merge-preview-thead"></thead>
+          <tbody id="merge-preview-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 数据比对工具视图 ======== -->
+  <div class="main-container tool-view" id="view-diff">
+    <button class="tool-back-btn" id="diff-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      返回首页
+    </button>
+    <div class="tool-header">
+      <div class="tool-header-icon" style="background:var(--cyan-soft);color:var(--cyan)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M3 12h18"/><circle cx="7" cy="7" r="2"/><circle cx="17" cy="17" r="2"/></svg>
+      </div>
+      <div class="tool-header-info">
+        <h2>数据比对</h2>
+        <p>上传两份表格，快速发现新增、修改、删除的差异行</p>
+      </div>
+    </div>
+
+    <div class="dual-upload">
+      <div>
+        <div class="upload-label">📋 旧版数据（基准）</div>
+        <div class="upload-zone" id="diff-upload-old">
+          <div class="upload-zone-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          </div>
+          <h3>拖拽上传或 <em>点击选择</em></h3>
+          <p>支持 .xlsx / .xls / .csv</p>
+          <input type="file" id="diff-file-old" accept=".xlsx,.xls,.csv" />
+          <div class="uploaded-files" id="diff-files-old"></div>
+        </div>
+      </div>
+      <div>
+        <div class="upload-label">📝 新版数据（对比）</div>
+        <div class="upload-zone" id="diff-upload-new">
+          <div class="upload-zone-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          </div>
+          <h3>拖拽上传或 <em>点击选择</em></h3>
+          <p>支持 .xlsx / .xls / .csv</p>
+          <input type="file" id="diff-file-new" accept=".xlsx,.xls,.csv" />
+          <div class="uploaded-files" id="diff-files-new"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="config-panel" id="diff-config" style="display:none">
+      <h3>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09"/></svg>
+        比对设置
+      </h3>
+      <div class="config-grid">
+        <div class="config-item">
+          <label>旧版 Sheet</label>
+          <select id="diff-old-sheet"></select>
+        </div>
+        <div class="config-item">
+          <label>新版 Sheet</label>
+          <select id="diff-new-sheet"></select>
+        </div>
+        <div class="config-item">
+          <label>主键列（用于行级匹配）</label>
+          <select id="diff-key-col"></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar" id="diff-action-bar" style="display:none">
+      <div class="action-bar-left">
+        <button class="btn btn-primary btn-shine" id="diff-execute">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          执行比对
+        </button>
+      </div>
+      <div class="action-bar-right">
+        <button class="btn btn-success" id="diff-download" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          下载差异报告
+        </button>
+      </div>
+    </div>
+
+    <div class="result-stats" id="diff-result-stats" style="display:none"></div>
+
+    <div class="preview-section" id="diff-preview" style="display:none">
+      <div class="preview-header">
+        <h3>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          差异对比结果
+        </h3>
+        <div class="preview-stats" id="diff-preview-stats"></div>
+      </div>
+      <div class="preview-table-wrap">
+        <table class="preview-table" id="diff-preview-table">
+          <thead id="diff-preview-thead"></thead>
+          <tbody id="diff-preview-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 处理中覆盖层 -->
+  <div class="processing-overlay" id="processing-overlay">
+    <div class="processing-card">
+      <div class="spinner"></div>
+      <h3 id="processing-title">正在处理...</h3>
+      <p id="processing-msg">请稍候，数据正在处理中</p>
+    </div>
+  </div>
+
+  <!-- Toast 容器 -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- 引入 SheetJS -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src="app.js?v=2"></script>
+</body>
+</html>
