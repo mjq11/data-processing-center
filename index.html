@@ -82,6 +82,46 @@
         <p>对比两份表格的差异，高亮新增、修改、删除的行</p>
         <div class="tool-card-tag">🔍 差异发现</div>
       </div>
+      <div class="tool-card" data-tool="mask" id="card-mask">
+        <div class="tool-card-icon" style="background:var(--red-soft);color:var(--red)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>敏感数据脱敏</h3>
+        <p>姓名、手机号、身份证等敏感信息本地快速遮蔽脱敏</p>
+        <div class="tool-card-tag" style="background:var(--red-soft);color:var(--red)">🛡️ 安全合规</div>
+      </div>
+      <div class="tool-card" data-tool="split" id="card-split">
+        <div class="tool-card-icon" style="background:var(--pink-soft);color:var(--pink)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m-8 18v-3a2 2 0 0 1 2-2h3m-11 0h3a2 2 0 0 0 2 2v3"/></svg>
+        </div>
+        <h3>数据拆分器</h3>
+        <p>按指定列的值或固定行数将表格拆分为多个文件打包下载</p>
+        <div class="tool-card-tag" style="background:var(--pink-soft);color:var(--pink)">✂️ 一拆为多</div>
+      </div>
+      <div class="tool-card" data-tool="formula" id="card-formula">
+        <div class="tool-card-icon" style="background:var(--blue-soft);color:var(--blue)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20M4 19.5V3.5A2.5 2.5 0 0 1 6.5 1H20v21H6.5a2.5 2.5 0 0 1-2.5-2.5z"/></svg>
+        </div>
+        <h3>公式计算/派生</h3>
+        <p>使用低代码公式在表格中计算并派生生成新的数据列</p>
+        <div class="tool-card-tag" style="background:var(--blue-soft);color:var(--blue)">🧮 派生算值</div>
+      </div>
+      <div class="tool-card" data-tool="pivot" id="card-pivot">
+        <div class="tool-card-icon" style="background:var(--orange-soft);color:var(--orange)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+        </div>
+        <h3>多维分组汇总</h3>
+        <p>按指定列对表格做多维度求和、计数和均值等数据透视</p>
+        <div class="tool-card-tag" style="background:var(--orange-soft);color:var(--orange)">📊 分组透视</div>
+      </div>
+      <div class="tool-card" data-tool="chart" id="card-chart">
+        <div class="tool-card-icon" style="background:var(--cyan-soft);color:var(--cyan)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        </div>
+        <h3>一键图表生成</h3>
+        <p>直接利用表格数据生成可视化的折线、柱状或饼状图并导出</p>
+        <div class="tool-card-tag" style="background:var(--cyan-soft);color:var(--cyan)">📈 一键可视化</div>
+      </div>
     </div>
   </div>
 
@@ -581,6 +621,439 @@
     </div>
   </div>
 
+  </div>
+
+  <!-- ======== 敏感数据脱敏工具视图 ======== -->
+  <div class="main-container tool-view" id="view-mask">
+    <button class="tool-back-btn" id="mask-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      返回首页
+    </button>
+    <div class="tool-header">
+      <div class="tool-header-icon" style="background:var(--red-soft);color:var(--red)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="tool-header-info">
+        <h2>敏感数据脱敏</h2>
+        <p>姓名、手机号、身份证、邮箱等敏感列的本地安全隐私保护脱敏</p>
+      </div>
+    </div>
+
+    <div class="upload-zone" id="mask-upload">
+      <div class="upload-zone-icon" style="background:var(--red-soft);color:var(--red)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      </div>
+      <h3>拖拽上传或 <em>点击选择</em></h3>
+      <p>支持 .xlsx / .xls / .csv</p>
+      <input type="file" id="mask-file" accept=".xlsx,.xls,.csv" />
+      <div class="uploaded-files" id="mask-files"></div>
+    </div>
+
+    <div class="config-panel" id="mask-config" style="display:none">
+      <h3>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        配置脱敏规则
+      </h3>
+      <div class="config-grid" style="margin-bottom:12px">
+        <div class="config-item">
+          <label>选择 Sheet</label>
+          <select id="mask-sheet"></select>
+        </div>
+      </div>
+      
+      <!-- 字段规则配置区 -->
+      <div class="mask-rules-container">
+        <div class="upload-label">🔒 字段脱敏设置</div>
+        <div class="fill-rules" id="mask-rules-list">
+          <!-- 动态加载字段及脱敏方式 -->
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar" id="mask-action-bar" style="display:none">
+      <div class="action-bar-left">
+        <button class="btn btn-primary btn-shine" id="mask-execute" style="background:var(--red);box-shadow:0 1px 3px var(--red-soft)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          一键脱敏
+        </button>
+      </div>
+      <div class="action-bar-right">
+        <button class="btn btn-success" id="mask-download" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          下载脱敏结果
+        </button>
+      </div>
+    </div>
+
+    <div class="result-stats" id="mask-result-stats" style="display:none"></div>
+
+    <div class="preview-section" id="mask-preview" style="display:none">
+      <div class="preview-header">
+        <h3>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          脱敏结果预览 (前 100 行)
+        </h3>
+        <div class="preview-stats" id="mask-preview-stats"></div>
+      </div>
+      <div class="preview-table-wrap">
+        <table class="preview-table" id="mask-preview-table">
+          <thead id="mask-preview-thead"></thead>
+          <tbody id="mask-preview-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 数据拆分工具视图 ======== -->
+  <div class="main-container tool-view" id="view-split">
+    <button class="tool-back-btn" id="split-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      返回首页
+    </button>
+    <div class="tool-header">
+      <div class="tool-header-icon" style="background:var(--pink-soft);color:var(--pink)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m-8 18v-3a2 2 0 0 1 2-2h3m-11 0h3a2 2 0 0 0 2 2v3"/></svg>
+      </div>
+      <div class="tool-header-info">
+        <h2>数据拆分器</h2>
+        <p>按某列的值（如“部门”），或按设定最大行数将大表等分为多个独立文件</p>
+      </div>
+    </div>
+
+    <div class="upload-zone" id="split-upload">
+      <div class="upload-zone-icon" style="background:var(--pink-soft);color:var(--pink)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      </div>
+      <h3>拖拽上传或 <em>点击选择</em></h3>
+      <p>支持 .xlsx / .xls / .csv</p>
+      <input type="file" id="split-file" accept=".xlsx,.xls,.csv" />
+      <div class="uploaded-files" id="split-files"></div>
+    </div>
+
+    <div class="config-panel" id="split-config" style="display:none">
+      <h3>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m-8 18v-3a2 2 0 0 1 2-2h3m-11 0h3a2 2 0 0 0 2 2v3"/></svg>
+        拆分设置
+      </h3>
+      <div class="config-grid" style="margin-bottom:12px">
+        <div class="config-item">
+          <label>选择 Sheet</label>
+          <select id="split-sheet"></select>
+        </div>
+        <div class="config-item">
+          <label>拆分方式</label>
+          <select id="split-mode">
+            <option value="col">按列值拆分（例如按“省份/部门”）</option>
+            <option value="rows">按最大行数等分（例如每2000行切分）</option>
+          </select>
+        </div>
+        <div class="config-item" id="split-col-wrap">
+          <label>拆分依据列</label>
+          <div id="split-col-select"></div>
+        </div>
+        <div class="config-item" id="split-rows-wrap" style="display:none">
+          <label>每个子表最大行数</label>
+          <input type="number" id="split-rows-val" value="1000" min="1" />
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar" id="split-action-bar" style="display:none">
+      <div class="action-bar-left">
+        <button class="btn btn-primary btn-shine" id="split-execute" style="background:var(--pink);box-shadow:0 1px 3px var(--pink-soft)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          开始拆分并打包
+        </button>
+      </div>
+    </div>
+
+    <div class="result-stats" id="split-result-stats" style="display:none"></div>
+
+    <div class="preview-section" id="split-preview" style="display:none">
+      <div class="preview-header">
+        <h3>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          原表预览 (前 50 行)
+        </h3>
+        <div class="preview-stats" id="split-preview-stats"></div>
+      </div>
+      <div class="preview-table-wrap">
+        <table class="preview-table" id="split-preview-table">
+          <thead id="split-preview-thead"></thead>
+          <tbody id="split-preview-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 公式计算/派生工具视图 ======== -->
+  <div class="main-container tool-view" id="view-formula">
+    <button class="tool-back-btn" id="formula-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      返回首页
+    </button>
+    <div class="tool-header">
+      <div class="tool-header-icon" style="background:var(--blue-soft);color:var(--blue)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M4 19.5A2.5 2.5 0 0 0 6.5 22H20M4 19.5V3.5A2.5 2.5 0 0 1 6.5 1H20v21H6.5a2.5 2.5 0 0 1-2.5-2.5z"/></svg>
+      </div>
+      <div class="tool-header-info">
+        <h2>公式计算与派生列</h2>
+        <p>通过自定义低代码算式（如：[单价]*[数量]），或者一键快捷逻辑派生出新的表格数据列</p>
+      </div>
+    </div>
+
+    <div class="upload-zone" id="formula-upload">
+      <div class="upload-zone-icon" style="background:var(--blue-soft);color:var(--blue)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      </div>
+      <h3>拖拽上传或 <em>点击选择</em></h3>
+      <p>支持 .xlsx / .xls / .csv</p>
+      <input type="file" id="formula-file" accept=".xlsx,.xls,.csv" />
+      <div class="uploaded-files" id="formula-files"></div>
+    </div>
+
+    <div class="config-panel" id="formula-config" style="display:none">
+      <h3>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        配置派生规则
+      </h3>
+      <div class="config-grid" style="margin-bottom:14px">
+        <div class="config-item">
+          <label>选择 Sheet</label>
+          <select id="formula-sheet"></select>
+        </div>
+        <div class="config-item">
+          <label>新列名称</label>
+          <input type="text" id="formula-new-col" value="新派生列" placeholder="请输入生成的列名..." />
+        </div>
+        <div class="config-item">
+          <label>常用快捷公式 (点击一键填入)</label>
+          <select id="formula-preset">
+            <option value="custom">-- 自定义公式 --</option>
+            <option value="id_birthday">身份证 ➔ 提取生日 (YYYY-MM-DD)</option>
+            <option value="id_gender">身份证 ➔ 提取性别 (男/女)</option>
+            <option value="concat">两列合并拼接</option>
+            <option value="math_mult">相乘 (如单价 * 数量)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="formula-editor-wrap">
+        <div class="upload-label">📝 计算公式 (用 [列名] 代表该列单元格的值)</div>
+        <div class="formula-field-tags" id="formula-field-tags">
+          <!-- 动态加载当前表的所有列字段标签，点击可以快捷插入公式 -->
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <input type="text" id="formula-expr-input" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:var(--r-md);font-family:monospace;background:var(--bg-input);color:var(--text)" placeholder="如: [单价] * [数量] * 0.9" />
+        </div>
+        <p class="formula-hint" style="font-size:0.72rem;color:var(--text-secondary);margin-top:6px;font-style:italic">支持标准数学算术：+ - * / % 以及括号()，以及文本拼接（如：[省份]+[城市]）。</p>
+      </div>
+    </div>
+
+    <div class="action-bar" id="formula-action-bar" style="display:none">
+      <div class="action-bar-left">
+        <button class="btn btn-primary btn-shine" id="formula-execute" style="background:var(--blue);box-shadow:0 1px 3px var(--blue-soft)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          生成派生列
+        </button>
+      </div>
+      <div class="action-bar-right">
+        <button class="btn btn-success" id="formula-download" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          下载结果
+        </button>
+      </div>
+    </div>
+
+    <div class="result-stats" id="formula-result-stats" style="display:none"></div>
+
+    <div class="preview-section" id="formula-preview" style="display:none">
+      <div class="preview-header">
+        <h3>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          生成结果预览 (前 100 行)
+        </h3>
+        <div class="preview-stats" id="formula-preview-stats"></div>
+      </div>
+      <div class="preview-table-wrap">
+        <table class="preview-table" id="formula-preview-table">
+          <thead id="formula-preview-thead"></thead>
+          <tbody id="formula-preview-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 多维分组汇总工具视图 ======== -->
+  <div class="main-container tool-view" id="view-pivot">
+    <button class="tool-back-btn" id="pivot-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      返回首页
+    </button>
+    <div class="tool-header">
+      <div class="tool-header-icon" style="background:var(--orange-soft);color:var(--orange)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+      </div>
+      <div class="tool-header-info">
+        <h2>多维分组汇总</h2>
+        <p>像 Excel 数据透视表一样，将海量明细数据按照指定字段分类并统计求和、计数或均值</p>
+      </div>
+    </div>
+
+    <div class="upload-zone" id="pivot-upload">
+      <div class="upload-zone-icon" style="background:var(--orange-soft);color:var(--orange)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      </div>
+      <h3>拖拽上传或 <em>点击选择</em></h3>
+      <p>支持 .xlsx / .xls / .csv</p>
+      <input type="file" id="pivot-file" accept=".xlsx,.xls,.csv" />
+      <div class="uploaded-files" id="pivot-files"></div>
+    </div>
+
+    <div class="config-panel" id="pivot-config" style="display:none">
+      <h3>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M9 3v18M3 9h18M3 15h18"/></svg>
+        分组与汇总设置
+      </h3>
+      <div class="config-grid" style="margin-bottom:14px">
+        <div class="config-item">
+          <label>选择 Sheet</label>
+          <select id="pivot-sheet"></select>
+        </div>
+        <div class="config-item">
+          <label>分组列 (维度)</label>
+          <div id="pivot-group-col"></div>
+        </div>
+        <div class="config-item">
+          <label>汇总列 (度量)</label>
+          <div id="pivot-val-col"></div>
+        </div>
+        <div class="config-item">
+          <label>聚合计算方式</label>
+          <select id="pivot-agg-func">
+            <option value="sum">求和 (SUM)</option>
+            <option value="count">计数 (COUNT)</option>
+            <option value="avg">求平均值 (AVERAGE)</option>
+            <option value="max">最大值 (MAX)</option>
+            <option value="min">最小值 (MIN)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar" id="pivot-action-bar" style="display:none">
+      <div class="action-bar-left">
+        <button class="btn btn-primary btn-shine" id="pivot-execute" style="background:var(--orange);box-shadow:0 1px 3px var(--orange-soft)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          生成汇总分析表
+        </button>
+      </div>
+      <div class="action-bar-right">
+        <button class="btn btn-success" id="pivot-download" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          下载汇总表
+        </button>
+      </div>
+    </div>
+
+    <div class="result-stats" id="pivot-result-stats" style="display:none"></div>
+
+    <div class="preview-section" id="pivot-preview" style="display:none">
+      <div class="preview-header">
+        <h3>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          汇总结果预览
+        </h3>
+        <div class="preview-stats" id="pivot-preview-stats"></div>
+      </div>
+      <div class="preview-table-wrap">
+        <table class="preview-table" id="pivot-preview-table">
+          <thead id="pivot-preview-thead"></thead>
+          <tbody id="pivot-preview-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== 一键图表生成工具视图 ======== -->
+  <div class="main-container tool-view" id="view-chart">
+    <button class="tool-back-btn" id="chart-back">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      返回首页
+    </button>
+    <div class="tool-header">
+      <div class="tool-header-icon" style="background:var(--cyan-soft);color:var(--cyan)">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      </div>
+      <div class="tool-header-info">
+        <h2>一键图表生成</h2>
+        <p>基于上传的表格，自动汇总并渲染精美的高清动态图表，支持一键保存图表图片</p>
+      </div>
+    </div>
+
+    <div class="upload-zone" id="chart-upload">
+      <div class="upload-zone-icon" style="background:var(--cyan-soft);color:var(--cyan)">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+      </div>
+      <h3>拖拽上传或 <em>点击选择</em></h3>
+      <p>支持 .xlsx / .xls / .csv</p>
+      <input type="file" id="chart-file" accept=".xlsx,.xls,.csv" />
+      <div class="uploaded-files" id="chart-files"></div>
+    </div>
+
+    <div class="config-panel" id="chart-config" style="display:none">
+      <h3>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+        图表维度与样式配置
+      </h3>
+      <div class="config-grid" style="margin-bottom:14px">
+        <div class="config-item">
+          <label>选择 Sheet</label>
+          <select id="chart-sheet"></select>
+        </div>
+        <div class="config-item">
+          <label>图表类型</label>
+          <select id="chart-type">
+            <option value="bar">柱状图 (Bar Chart)</option>
+            <option value="line">折线图 (Line Chart)</option>
+            <option value="pie">饼状图 (Pie Chart)</option>
+            <option value="doughnut">环形图 (Doughnut Chart)</option>
+            <option value="horizontalBar">横向条形图</option>
+          </select>
+        </div>
+        <div class="config-item">
+          <label>X 轴数据列 (类别维度)</label>
+          <div id="chart-x-col"></div>
+        </div>
+        <div class="config-item">
+          <label>Y 轴数据列 (数值度量)</label>
+          <div id="chart-y-col"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-bar" id="chart-action-bar" style="display:none">
+      <div class="action-bar-left">
+        <button class="btn btn-primary btn-shine" id="chart-execute" style="background:var(--cyan);box-shadow:0 1px 3px var(--cyan-soft)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+          一键生成图表
+        </button>
+      </div>
+      <div class="action-bar-right">
+        <button class="btn btn-success" id="chart-export-img" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16l4.586-4.586a2 2 0 0 1 2.828 0L16 16m-2-2l1.586-1.586a2 2 0 0 1 2.828 0L20 14m-9-6h.01M4 20h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z"/></svg>
+          保存图表为图片
+        </button>
+      </div>
+    </div>
+
+    <div class="chart-render-section" id="chart-render-panel" style="display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);padding:20px;margin-bottom:16px;min-height:300px;display:flex;justify-content:center;align-items:center">
+      <div style="width:100%;max-width:800px;position:relative">
+        <canvas id="chart-canvas"></canvas>
+      </div>
+    </div>
+  </div>
+
   <!-- 处理中覆盖层 -->
   <div class="processing-overlay" id="processing-overlay">
     <div class="processing-card">
@@ -593,6 +1066,10 @@
   <!-- Toast 容器 -->
   <div class="toast-container" id="toast-container"></div>
 
+  <!-- 引入 JSZip (用于打包下载) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <!-- 引入 Chart.js (用于图表绘制) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- 引入 SheetJS -->
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
   <script src="app.js?v=2"></script>

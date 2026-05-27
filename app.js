@@ -15,6 +15,16 @@ const state = {
   merge: { workbooks: [], files: [], resultWB: null },
   // 数据比对
   diff: { oldWB: null, newWB: null, oldFile: null, newFile: null, resultWB: null },
+  // 敏感数据脱敏
+  mask: { workbook: null, file: null, resultWB: null },
+  // 数据拆分器
+  split: { workbook: null, file: null, zipBlob: null },
+  // 公式计算
+  formula: { workbook: null, file: null, resultWB: null },
+  // 多维分组汇总
+  pivot: { workbook: null, file: null, resultWB: null },
+  // 一键图表生成
+  chart: { workbook: null, file: null, chartInstance: null },
 };
 
 // ==================== 工具函数 ====================
@@ -1401,6 +1411,1047 @@ function initDiff() {
   });
 }
 
+// ==================== 新增 5 大功能板块逻辑 ====================
+
+// 🛡️ 敏感数据脱敏
+function initMask() {
+  const s = state.mask;
+  let ssMaskCol = null;
+
+  document.getElementById('mask-back').addEventListener('click', () => switchView('home'));
+
+  bindUploadZone(
+    document.getElementById('mask-upload'),
+    document.getElementById('mask-file'),
+    async (files) => {
+      try {
+        s.file = files[0];
+        s.workbook = await readFile(files[0]);
+        const container = document.getElementById('mask-files');
+        container.innerHTML = '';
+        container.appendChild(createFileTag(files[0].name, files[0].size, () => {
+          s.workbook = null; s.file = null;
+          hideMaskConfig();
+        }));
+        showToast(`文件 "${files[0].name}" 上传成功，开始配置脱敏规则`);
+        checkMaskReady();
+      } catch (e) { showToast('文件读取失败: ' + e.message, 'error'); }
+    }
+  );
+
+  function hideMaskConfig() {
+    document.getElementById('mask-config').style.display = 'none';
+    document.getElementById('mask-action-bar').style.display = 'none';
+    document.getElementById('mask-preview').style.display = 'none';
+    document.getElementById('mask-result-stats').style.display = 'none';
+    document.getElementById('mask-download').style.display = 'none';
+  }
+
+  function checkMaskReady() {
+    if (!s.workbook) return;
+    document.getElementById('mask-config').style.display = '';
+    document.getElementById('mask-action-bar').style.display = '';
+
+    populateSelect(document.getElementById('mask-sheet'), s.workbook.SheetNames);
+    updateMaskColumns();
+  }
+
+  document.getElementById('mask-sheet').addEventListener('change', updateMaskColumns);
+
+  function updateMaskColumns() {
+    const sheetName = document.getElementById('mask-sheet').value;
+    if (!sheetName) return;
+
+    const headers = getSheetHeaders(s.workbook, sheetName);
+    const container = document.getElementById('mask-rules-list');
+    container.innerHTML = '';
+
+    headers.forEach(h => {
+      const item = document.createElement('div');
+      item.className = 'fill-rule-item';
+      
+      // 智能猜测默认规则
+      let defaultRule = 'none';
+      const lowerH = h.toLowerCase();
+      if (lowerH.includes('名') || lowerH.includes('name') || lowerH.includes('客户') || lowerH.includes('联系人')) defaultRule = 'name';
+      else if (lowerH.includes('手机') || lowerH.includes('电话') || lowerH.includes('tel') || lowerH.includes('phone') || lowerH.includes('mobile')) defaultRule = 'phone';
+      else if (lowerH.includes('身份') || lowerH.includes('idcard') || lowerH.includes('证件') || lowerH.includes('sfz')) defaultRule = 'idcard';
+      else if (lowerH.includes('邮') || lowerH.includes('email') || lowerH.includes('mail')) defaultRule = 'email';
+      else if (lowerH.includes('薪') || lowerH.includes('资') || lowerH.includes('密码') || lowerH.includes('金额') || lowerH.includes('salary')) defaultRule = 'secret';
+
+      item.innerHTML = `
+        <span class="match-rule-label" style="width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${escHtml(h)}">📋 ${escHtml(h)}</span>
+        <span class="match-rule-arrow">➔</span>
+        <select class="mask-rule-select" data-col="${escHtml(h)}" style="flex:1;min-width:140px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--bg-card);color:var(--text)">
+          <option value="none" ${defaultRule === 'none' ? 'selected' : ''}>⚪ 不脱敏 (保持原样)</option>
+          <option value="name" ${defaultRule === 'name' ? 'selected' : ''}>👤 姓名遮蔽 (如：张*三 / 李*)</option>
+          <option value="phone" ${defaultRule === 'phone' ? 'selected' : ''}>📱 手机号遮蔽 (如：138****5678)</option>
+          <option value="idcard" ${defaultRule === 'idcard' ? 'selected' : ''}>🆔 身份证遮蔽 (保留前6后4位)</option>
+          <option value="email" ${defaultRule === 'email' ? 'selected' : ''}>📧 电子邮箱遮蔽 (如：ab***@qq.com)</option>
+          <option value="secret" ${defaultRule === 'secret' ? 'selected' : ''}>🔒 完全遮蔽 (替换为 ***)</option>
+          <option value="hash" ${defaultRule === 'hash' ? 'selected' : ''}>🌀 安全哈希 (SHA-256算法伪混淆，保留唯一关联性)</option>
+        </select>
+      `;
+      container.appendChild(item);
+    });
+
+    // 预览原数据
+    const data = getSheetData(s.workbook, sheetName);
+    renderPreviewTable(
+      document.getElementById('mask-preview-thead'),
+      document.getElementById('mask-preview-tbody'),
+      headers, data, 50
+    );
+    document.getElementById('mask-preview').style.display = '';
+    document.getElementById('mask-preview-stats').innerHTML =
+      `<span>${data.length} 行</span><span>${headers.length} 列</span>`;
+  }
+
+  function maskValue(val, rule) {
+    if (val === null || val === undefined || val === '') return '';
+    const s = String(val).trim();
+    if (rule === 'none') return val;
+    if (rule === 'name') {
+      if (s.length <= 1) return '*';
+      if (s.length === 2) return s[0] + '*';
+      return s[0] + '*'.repeat(s.length - 2) + s[s.length - 1];
+    } else if (rule === 'phone') {
+      return s.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+    } else if (rule === 'idcard') {
+      if (s.length < 10) return '******';
+      return s.substring(0, 6) + '********' + s.substring(s.length - 4);
+    } else if (rule === 'email') {
+      const idx = s.indexOf('@');
+      if (idx <= 0) return '***';
+      const name = s.substring(0, idx);
+      const domain = s.substring(idx);
+      if (name.length <= 2) return name[0] + '***' + domain;
+      return name.substring(0, 2) + '***' + domain;
+    } else if (rule === 'secret') {
+      return '***';
+    } else if (rule === 'hash') {
+      let hash = 0;
+      for (let i = 0; i < s.length; i++) {
+        hash = (hash << 5) - hash + s.charCodeAt(i);
+        hash |= 0;
+      }
+      return 'h_' + Math.abs(hash).toString(16);
+    }
+    return val;
+  }
+
+  document.getElementById('mask-execute').addEventListener('click', () => {
+    if (!s.workbook) return;
+    const sheetName = document.getElementById('mask-sheet').value;
+    const data = getSheetData(s.workbook, sheetName);
+    const headers = getSheetHeaders(s.workbook, sheetName);
+
+    // 收集规则
+    const rules = {};
+    let maskedColsCount = 0;
+    document.querySelectorAll('#mask-rules-list .mask-rule-select').forEach(sel => {
+      const col = sel.dataset.col;
+      const val = sel.value;
+      rules[col] = val;
+      if (val !== 'none') maskedColsCount++;
+    });
+
+    if (maskedColsCount === 0) {
+      showToast('未选择任何脱敏规则，表格将保持原样', 'info');
+    }
+
+    showProcessing('正在本地脱敏处理...', '数据完全在您的浏览器端计算，绝对安全');
+
+    setTimeout(() => {
+      try {
+        const maskedData = JSON.parse(JSON.stringify(data)); // 深拷贝
+        let totalMaskedCells = 0;
+
+        maskedData.forEach(row => {
+          headers.forEach(h => {
+            const rule = rules[h];
+            if (rule && rule !== 'none') {
+              const originalVal = row[h];
+              const newVal = maskValue(originalVal, rule);
+              if (originalVal !== newVal) {
+                row[h] = newVal;
+                totalMaskedCells++;
+              }
+            }
+          });
+        });
+
+        // 结果存 Workbook
+        const ws = XLSX.utils.json_to_sheet(maskedData, { header: headers });
+        const resultWB = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(resultWB, ws, sheetName);
+        s.resultWB = resultWB;
+
+        // 渲染预览
+        renderPreviewTable(
+          document.getElementById('mask-preview-thead'),
+          document.getElementById('mask-preview-tbody'),
+          headers, maskedData, 100
+        );
+        document.getElementById('mask-preview-stats').innerHTML =
+          `<span>已脱敏预览 ${maskedData.length} 行</span><span>${headers.length} 列</span>`;
+
+        // 统计卡片
+        document.getElementById('mask-result-stats').style.display = '';
+        document.getElementById('mask-result-stats').innerHTML = `
+          <div class="result-stat-card success">
+            <div class="result-stat-icon" style="background:var(--red-soft);color:var(--red)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div class="result-stat-info"><span class="result-stat-value">${maskedColsCount}</span><span class="result-stat-label">脱敏字段数</span></div>
+          </div>
+          <div class="result-stat-card success">
+            <div class="result-stat-icon" style="background:var(--green-soft);color:var(--green)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg></div>
+            <div class="result-stat-info"><span class="result-stat-value">${totalMaskedCells}</span><span class="result-stat-label">完成脱敏单元格</span></div>
+          </div>
+          <div class="result-stat-card info">
+            <div class="result-stat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12h6"/></svg></div>
+            <div class="result-stat-info"><span class="result-stat-value">${maskedData.length}</span><span class="result-stat-label">处理行数</span></div>
+          </div>
+        `;
+
+        document.getElementById('mask-download').style.display = '';
+        showToast('脱敏完成！文件已准备好下载。');
+      } catch (err) {
+        showToast('脱敏失败: ' + err.message, 'error');
+      }
+      hideProcessing();
+    }, 150);
+  });
+
+  document.getElementById('mask-download').addEventListener('click', () => {
+    if (!s.resultWB) return;
+    const name = s.file ? s.file.name.replace(/\.\w+$/, '') : '脱敏数据';
+    downloadWorkbook(s.resultWB, `${name}_已安全脱敏.xlsx`);
+    showToast('已安全保存脱敏数据');
+  });
+}
+
+// ✂️ 数据拆分器
+function initSplit() {
+  const s = state.split;
+  let ssSplitCol = null;
+
+  document.getElementById('split-back').addEventListener('click', () => switchView('home'));
+
+  // 模式切换
+  document.getElementById('split-mode').addEventListener('change', (e) => {
+    const isCol = e.target.value === 'col';
+    document.getElementById('split-col-wrap').style.display = isCol ? '' : 'none';
+    document.getElementById('split-rows-wrap').style.display = isCol ? 'none' : '';
+  });
+
+  bindUploadZone(
+    document.getElementById('split-upload'),
+    document.getElementById('split-file'),
+    async (files) => {
+      try {
+        s.file = files[0];
+        s.workbook = await readFile(files[0]);
+        const container = document.getElementById('split-files');
+        container.innerHTML = '';
+        container.appendChild(createFileTag(files[0].name, files[0].size, () => {
+          s.workbook = null; s.file = null; s.zipBlob = null;
+          hideSplitConfig();
+        }));
+        showToast(`表格 "${files[0].name}" 加载成功`);
+        checkSplitReady();
+      } catch (e) { showToast('文件读取失败: ' + e.message, 'error'); }
+    }
+  );
+
+  function hideSplitConfig() {
+    document.getElementById('split-config').style.display = 'none';
+    document.getElementById('split-action-bar').style.display = 'none';
+    document.getElementById('split-preview').style.display = 'none';
+    document.getElementById('split-result-stats').style.display = 'none';
+  }
+
+  function checkSplitReady() {
+    if (!s.workbook) return;
+    document.getElementById('split-config').style.display = '';
+    document.getElementById('split-action-bar').style.display = '';
+
+    populateSelect(document.getElementById('split-sheet'), s.workbook.SheetNames);
+    updateSplitColumns();
+  }
+
+  document.getElementById('split-sheet').addEventListener('change', updateSplitColumns);
+
+  function updateSplitColumns() {
+    const sheetName = document.getElementById('split-sheet').value;
+    if (!sheetName) return;
+
+    const headers = getSheetHeaders(s.workbook, sheetName);
+    const selectContainer = document.getElementById('split-col-select');
+    selectContainer.innerHTML = '';
+
+    if (ssSplitCol) ssSplitCol.destroy();
+    ssSplitCol = createSearchableSelect(selectContainer, headers, { placeholder: '选择拆分的依据列...' });
+
+    // 预览
+    const data = getSheetData(s.workbook, sheetName);
+    renderPreviewTable(
+      document.getElementById('split-preview-thead'),
+      document.getElementById('split-preview-tbody'),
+      headers, data, 50
+    );
+    document.getElementById('split-preview').style.display = '';
+    document.getElementById('split-preview-stats').innerHTML =
+      `<span>原数据: ${data.length} 行</span><span>${headers.length} 列</span>`;
+  }
+
+  document.getElementById('split-execute').addEventListener('click', () => {
+    if (!s.workbook) return;
+    if (typeof JSZip === 'undefined') {
+      showToast('JSZip 库未加载，请检查网络连接', 'error');
+      return;
+    }
+
+    const sheetName = document.getElementById('split-sheet').value;
+    const mode = document.getElementById('split-mode').value;
+    const data = getSheetData(s.workbook, sheetName);
+    const headers = getSheetHeaders(s.workbook, sheetName);
+
+    if (data.length === 0) {
+      showToast('表中没有任何数据', 'error');
+      return;
+    }
+
+    showProcessing('正在执行拆分数据并打包...', '正在使用浏览器引擎分类打包，请稍候');
+
+    setTimeout(async () => {
+      try {
+        const zip = new JSZip();
+        let subTablesCount = 0;
+        const baseName = s.file.name.replace(/\.\w+$/, '');
+
+        if (mode === 'col') {
+          // 按列拆分
+          const colName = ssSplitCol ? ssSplitCol.value : '';
+          if (!colName) {
+            showToast('请先选择需要拆分的依据列', 'error');
+            hideProcessing();
+            return;
+          }
+
+          // 分组
+          const groups = {};
+          data.forEach(row => {
+            const val = String(row[colName] !== undefined ? row[colName] : '空值').trim().replace(/[\/\\?%*:|"<>\s]/g, '_');
+            if (!groups[val]) groups[val] = [];
+            groups[val].push(row);
+          });
+
+          subTablesCount = Object.keys(groups).length;
+
+          for (const key of Object.keys(groups)) {
+            const subData = groups[key];
+            const ws = XLSX.utils.json_to_sheet(subData, { header: headers });
+            const newWB = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(newWB, ws, sheetName);
+
+            const wbout = XLSX.write(newWB, { bookType: 'xlsx', type: 'array' });
+            zip.file(`${baseName}_${key}.xlsx`, wbout);
+          }
+        } else {
+          // 按行数拆分
+          const maxRows = parseInt(document.getElementById('split-rows-val').value) || 1000;
+          if (maxRows <= 0) {
+            showToast('行数必须大于0', 'error');
+            hideProcessing();
+            return;
+          }
+
+          subTablesCount = Math.ceil(data.length / maxRows);
+
+          for (let i = 0; i < subTablesCount; i++) {
+            const start = i * maxRows;
+            const end = Math.min(start + maxRows, data.length);
+            const subData = data.slice(start, end);
+
+            const ws = XLSX.utils.json_to_sheet(subData, { header: headers });
+            const newWB = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(newWB, ws, sheetName);
+
+            const wbout = XLSX.write(newWB, { bookType: 'xlsx', type: 'array' });
+            zip.file(`${baseName}_第${i + 1}部分_${start + 1}-${end}行.xlsx`, wbout);
+          }
+        }
+
+        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        s.zipBlob = zipBlob;
+
+        // 下载
+        const url = URL.createObjectURL(zipBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${baseName}_拆分包.zip`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        // 统计
+        document.getElementById('split-result-stats').style.display = '';
+        document.getElementById('split-result-stats').innerHTML = `
+          <div class="result-stat-card success">
+            <div class="result-stat-icon" style="background:var(--pink-soft);color:var(--pink)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3"/></svg></div>
+            <div class="result-stat-info"><span class="result-stat-value">${subTablesCount}</span><span class="result-stat-label">拆分子表个数</span></div>
+          </div>
+          <div class="result-stat-card success">
+            <div class="result-stat-icon" style="background:var(--green-soft);color:var(--green)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg></div>
+            <div class="result-stat-info"><span class="result-stat-value">${formatSize(zipBlob.size)}</span><span class="result-stat-label">ZIP压缩包大小</span></div>
+          </div>
+          <div class="result-stat-card info">
+            <div class="result-stat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12h6"/></svg></div>
+            <div class="result-stat-info"><span class="result-stat-value">${data.length}</span><span class="result-stat-label">原数据总行数</span></div>
+          </div>
+        `;
+
+        showToast(`拆分成功！已生成 ${subTablesCount} 个子表格并自动下载压缩包。`);
+      } catch (err) {
+        showToast('拆分打包失败: ' + err.message, 'error');
+      }
+      hideProcessing();
+    }, 150);
+  });
+}
+
+// 🧮 派生列与公式计算
+function initFormula() {
+  const s = state.formula;
+
+  document.getElementById('formula-back').addEventListener('click', () => switchView('home'));
+
+  bindUploadZone(
+    document.getElementById('formula-upload'),
+    document.getElementById('formula-file'),
+    async (files) => {
+      try {
+        s.file = files[0];
+        s.workbook = await readFile(files[0]);
+        const container = document.getElementById('formula-files');
+        container.innerHTML = '';
+        container.appendChild(createFileTag(files[0].name, files[0].size, () => {
+          s.workbook = null; s.file = null; s.resultWB = null;
+          hideFormulaConfig();
+        }));
+        showToast(`文件 "${files[0].name}" 上传成功，开始编辑派生列`);
+        checkFormulaReady();
+      } catch (e) { showToast('文件读取失败: ' + e.message, 'error'); }
+    }
+  );
+
+  function hideFormulaConfig() {
+    document.getElementById('formula-config').style.display = 'none';
+    document.getElementById('formula-action-bar').style.display = 'none';
+    document.getElementById('formula-preview').style.display = 'none';
+    document.getElementById('formula-result-stats').style.display = 'none';
+    document.getElementById('formula-download').style.display = 'none';
+  }
+
+  function checkFormulaReady() {
+    if (!s.workbook) return;
+    document.getElementById('formula-config').style.display = '';
+    document.getElementById('formula-action-bar').style.display = '';
+
+    populateSelect(document.getElementById('formula-sheet'), s.workbook.SheetNames);
+    updateFormulaColumns();
+  }
+
+  document.getElementById('formula-sheet').addEventListener('change', updateFormulaColumns);
+
+  function updateFormulaColumns() {
+    const sheetName = document.getElementById('formula-sheet').value;
+    if (!sheetName) return;
+
+    const headers = getSheetHeaders(s.workbook, sheetName);
+    const tagsContainer = document.getElementById('formula-field-tags');
+    tagsContainer.innerHTML = '';
+
+    headers.forEach(h => {
+      const tag = document.createElement('span');
+      tag.className = 'formula-field-tag';
+      tag.innerHTML = `📄 ${escHtml(h)}`;
+      tag.addEventListener('click', () => {
+        const input = document.getElementById('formula-expr-input');
+        input.value += `[${h}]`;
+        input.focus();
+      });
+      tagsContainer.appendChild(tag);
+    });
+
+    // 预设公式的切换逻辑
+    const presetSelect = document.getElementById('formula-preset');
+    presetSelect.onchange = (e) => {
+      const input = document.getElementById('formula-expr-input');
+      const val = e.target.value;
+      if (val === 'id_birthday') {
+        const idCol = headers.find(h => h.includes('身份证') || h.includes('ID') || h.includes('sfz')) || headers[0] || '身份证';
+        input.value = `ID_BIRTHDAY([${idCol}])`;
+        document.getElementById('formula-new-col').value = '出生日期';
+      } else if (val === 'id_gender') {
+        const idCol = headers.find(h => h.includes('身份证') || h.includes('ID') || h.includes('sfz')) || headers[0] || '身份证';
+        input.value = `ID_GENDER([${idCol}])`;
+        document.getElementById('formula-new-col').value = '性别';
+      } else if (val === 'concat') {
+        const c1 = headers[0] || '列A';
+        const c2 = headers[1] || '列B';
+        input.value = `[${c1}] + '-' + [${c2}]`;
+        document.getElementById('formula-new-col').value = '合并列';
+      } else if (val === 'math_mult') {
+        const c1 = headers.find(h => h.includes('单价') || h.includes('price')) || headers[0] || '单价';
+        const c2 = headers.find(h => h.includes('数量') || h.includes('count')) || headers[1] || '数量';
+        input.value = `[${c1}] * [${c2}]`;
+        document.getElementById('formula-new-col').value = '金额汇总';
+      } else {
+        input.value = '';
+      }
+    };
+
+    // 初始原表预览
+    const data = getSheetData(s.workbook, sheetName);
+    renderPreviewTable(
+      document.getElementById('formula-preview-thead'),
+      document.getElementById('formula-preview-tbody'),
+      headers, data, 50
+    );
+    document.getElementById('formula-preview').style.display = '';
+    document.getElementById('formula-preview-stats').innerHTML =
+      `<span>原数据: ${data.length} 行</span><span>${headers.length} 列</span>`;
+  }
+
+  // 沙箱公式计算器
+  function evalSandboxFormula(row, expr, headers) {
+    let finalExpr = expr;
+
+    // 内置提取身份证生日辅助函数
+    const ID_BIRTHDAY = (id) => {
+      const s = String(id).trim();
+      if (s.length !== 18) return '无效身份证';
+      return `${s.substring(6, 10)}-${s.substring(10, 12)}-${s.substring(12, 14)}`;
+    };
+
+    // 内置提取身份证性别辅助函数
+    const ID_GENDER = (id) => {
+      const s = String(id).trim();
+      if (s.length !== 18) return '无效身份证';
+      const num = parseInt(s.charAt(16));
+      return num % 2 === 0 ? '女' : '男';
+    };
+
+    // 字符串替换
+    headers.forEach(h => {
+      let cellVal = row[h];
+      if (cellVal === undefined || cellVal === null) cellVal = '';
+      
+      // 如果计算公式中包含当前列，将 [列名] 替换为其实际的值
+      const replacement = typeof cellVal === 'number' ? cellVal : JSON.stringify(String(cellVal));
+      finalExpr = finalExpr.split(`[${h}]`).join(replacement);
+    });
+
+    try {
+      // 构造纯安全数学与字符串计算
+      const fn = new Function('ID_BIRTHDAY', 'ID_GENDER', `return (${finalExpr});`);
+      const res = fn(ID_BIRTHDAY, ID_GENDER);
+      if (res === null || res === undefined) return '';
+      return res;
+    } catch (e) {
+      return '计算出错';
+    }
+  }
+
+  document.getElementById('formula-execute').addEventListener('click', () => {
+    if (!s.workbook) return;
+    const sheetName = document.getElementById('formula-sheet').value;
+    const newColName = document.getElementById('formula-new-col').value.trim();
+    const expr = document.getElementById('formula-expr-input').value.trim();
+
+    if (!newColName) {
+      showToast('新列名不能为空', 'error');
+      return;
+    }
+    if (!expr) {
+      showToast('公式算式不能为空', 'error');
+      return;
+    }
+
+    const data = getSheetData(s.workbook, sheetName);
+    const headers = getSheetHeaders(s.workbook, sheetName);
+
+    showProcessing('正在计算新数据并派生列...', '计算将在完全本地的沙箱中执行，保持性能卓越');
+
+    setTimeout(() => {
+      try {
+        const calculatedData = JSON.parse(JSON.stringify(data));
+        let errorCount = 0;
+
+        calculatedData.forEach((row, i) => {
+          const res = evalSandboxFormula(row, expr, headers);
+          row[newColName] = res;
+          if (res === '计算出错') errorCount++;
+        });
+
+        const newHeaders = [...headers];
+        if (!newHeaders.includes(newColName)) newHeaders.push(newColName);
+
+        // 渲染高亮预览
+        const highlightMap = {};
+        calculatedData.forEach((row, i) => {
+          highlightMap[i] = {};
+          highlightMap[i][newColName] = row[newColName] === '计算出错' ? 'cell-unmatched' : 'cell-new';
+        });
+
+        // 存入 Workbook
+        const ws = XLSX.utils.json_to_sheet(calculatedData, { header: newHeaders });
+        const resultWB = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(resultWB, ws, sheetName);
+        s.resultWB = resultWB;
+
+        renderPreviewTable(
+          document.getElementById('formula-preview-thead'),
+          document.getElementById('formula-preview-tbody'),
+          newHeaders, calculatedData, 100, highlightMap
+        );
+
+        // 结果统计
+        document.getElementById('formula-result-stats').style.display = '';
+        document.getElementById('formula-result-stats').innerHTML = `
+          <div class="result-stat-card success">
+            <div class="result-stat-icon" style="background:var(--blue-soft);color:var(--blue)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+            <div class="result-stat-info"><span class="result-stat-value">${newColName}</span><span class="result-stat-label">新派生列名</span></div>
+          </div>
+          <div class="result-stat-card info">
+            <div class="result-stat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12h6"/></svg></div>
+            <div class="result-stat-info"><span class="result-stat-value">${calculatedData.length}</span><span class="result-stat-label">总计派生计算行数</span></div>
+          </div>
+          <div class="result-stat-card ${errorCount > 0 ? 'error' : 'success'}">
+            <div class="result-stat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div>
+            <div class="result-stat-info"><span class="result-stat-value">${errorCount}</span><span class="result-stat-label">失败报错行</span></div>
+          </div>
+        `;
+
+        document.getElementById('formula-download').style.display = '';
+        showToast('公式派生计算已全部完成！');
+      } catch (err) {
+        showToast('公式派生列失败: ' + err.message, 'error');
+      }
+      hideProcessing();
+    }, 150);
+  });
+
+  document.getElementById('formula-download').addEventListener('click', () => {
+    if (!s.resultWB) return;
+    const name = s.file ? s.file.name.replace(/\.\w+$/, '') : '派生表格';
+    downloadWorkbook(s.resultWB, `${name}_派生新列.xlsx`);
+    showToast('计算表格已成功下载');
+  });
+}
+
+// 📊 多维分组汇总 (简易透视表)
+function initPivot() {
+  const s = state.pivot;
+  let ssGroupCol = null;
+  let ssValCol = null;
+
+  document.getElementById('pivot-back').addEventListener('click', () => switchView('home'));
+
+  bindUploadZone(
+    document.getElementById('pivot-upload'),
+    document.getElementById('pivot-file'),
+    async (files) => {
+      try {
+        s.file = files[0];
+        s.workbook = await readFile(files[0]);
+        const container = document.getElementById('pivot-files');
+        container.innerHTML = '';
+        container.appendChild(createFileTag(files[0].name, files[0].size, () => {
+          s.workbook = null; s.file = null; s.resultWB = null;
+          hidePivotConfig();
+        }));
+        showToast(`数据表格 "${files[0].name}" 导入成功`);
+        checkPivotReady();
+      } catch (e) { showToast('文件读取失败: ' + e.message, 'error'); }
+    }
+  );
+
+  function hidePivotConfig() {
+    document.getElementById('pivot-config').style.display = 'none';
+    document.getElementById('pivot-action-bar').style.display = 'none';
+    document.getElementById('pivot-preview').style.display = 'none';
+    document.getElementById('pivot-result-stats').style.display = 'none';
+    document.getElementById('pivot-download').style.display = 'none';
+  }
+
+  function checkPivotReady() {
+    if (!s.workbook) return;
+    document.getElementById('pivot-config').style.display = '';
+    document.getElementById('pivot-action-bar').style.display = '';
+
+    populateSelect(document.getElementById('pivot-sheet'), s.workbook.SheetNames);
+    updatePivotColumns();
+  }
+
+  document.getElementById('pivot-sheet').addEventListener('change', updatePivotColumns);
+
+  function updatePivotColumns() {
+    const sheetName = document.getElementById('pivot-sheet').value;
+    if (!sheetName) return;
+
+    const headers = getSheetHeaders(s.workbook, sheetName);
+    
+    const groupWrap = document.getElementById('pivot-group-col');
+    groupWrap.innerHTML = '';
+    if (ssGroupCol) ssGroupCol.destroy();
+    ssGroupCol = createSearchableSelect(groupWrap, headers, { placeholder: '选择一个分组字段 (如分类、销售员)' });
+
+    const valWrap = document.getElementById('pivot-val-col');
+    valWrap.innerHTML = '';
+    if (ssValCol) ssValCol.destroy();
+    ssValCol = createSearchableSelect(valWrap, headers, { placeholder: '选择用于计算的指标字段 (如金额、数量)' });
+
+    // 初始原表预览
+    const data = getSheetData(s.workbook, sheetName);
+    renderPreviewTable(
+      document.getElementById('pivot-preview-thead'),
+      document.getElementById('pivot-preview-tbody'),
+      headers, data, 50
+    );
+    document.getElementById('pivot-preview').style.display = '';
+    document.getElementById('pivot-preview-stats').innerHTML =
+      `<span>原数据明细: ${data.length} 行</span>`;
+  }
+
+  document.getElementById('pivot-execute').addEventListener('click', () => {
+    if (!s.workbook) return;
+    const sheetName = document.getElementById('pivot-sheet').value;
+    const groupCol = ssGroupCol ? ssGroupCol.value : '';
+    const valCol = ssValCol ? ssValCol.value : '';
+    const aggFunc = document.getElementById('pivot-agg-func').value;
+
+    if (!groupCol || !valCol) {
+      showToast('分组字段和数值指标字段都必须选择', 'error');
+      return;
+    }
+
+    const data = getSheetData(s.workbook, sheetName);
+
+    showProcessing('正在进行多维分类求和汇总计算...', '使用前端哈希图引擎，极大提升大表统计能力');
+
+    setTimeout(() => {
+      try {
+        // 哈希表分组 reduce
+        const groups = {};
+        data.forEach(row => {
+          let gKey = row[groupCol];
+          if (gKey === undefined || gKey === null || gKey === '') gKey = '(空值)';
+          gKey = String(gKey).trim();
+
+          if (!groups[gKey]) groups[gKey] = [];
+          groups[gKey].push(row);
+        });
+
+        const aggLabel = {
+          sum: '求和',
+          count: '计数',
+          avg: '平均值',
+          max: '最大值',
+          min: '最小值'
+        }[aggFunc];
+
+        const valHeader = `${valCol}_${aggLabel}`;
+        const summaryData = [];
+
+        Object.keys(groups).forEach(key => {
+          const rows = groups[key];
+          const item = {};
+          item[groupCol] = key;
+
+          // 提取用于运算的数字
+          const nums = rows.map(r => {
+            const v = Number(r[valCol]);
+            return isNaN(v) ? null : v;
+          }).filter(v => v !== null);
+
+          let resultVal = 0;
+          if (aggFunc === 'sum') {
+            resultVal = nums.reduce((a, b) => a + b, 0);
+          } else if (aggFunc === 'count') {
+            resultVal = rows.length;
+          } else if (aggFunc === 'avg') {
+            resultVal = nums.length > 0 ? (nums.reduce((a, b) => a + b, 0) / nums.length) : 0;
+          } else if (aggFunc === 'max') {
+            resultVal = nums.length > 0 ? Math.max(...nums) : 0;
+          } else if (aggFunc === 'min') {
+            resultVal = nums.length > 0 ? Math.min(...nums) : 0;
+          }
+
+          // 精度处理
+          item[valHeader] = typeof resultVal === 'number' ? Number(resultVal.toFixed(2)) : resultVal;
+          summaryData.push(item);
+        });
+
+        // 默认按分组键字母或数字升序排序
+        summaryData.sort((a, b) => String(a[groupCol]).localeCompare(String(b[groupCol]), 'zh'));
+
+        // 生成新表
+        const resHeaders = [groupCol, valHeader];
+        const ws = XLSX.utils.json_to_sheet(summaryData, { header: resHeaders });
+        const resultWB = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(resultWB, ws, '分类汇总结果');
+        s.resultWB = resultWB;
+
+        // 渲染预览
+        renderPreviewTable(
+          document.getElementById('pivot-preview-thead'),
+          document.getElementById('pivot-preview-tbody'),
+          resHeaders, summaryData, 100
+        );
+
+        document.getElementById('pivot-preview-stats').innerHTML =
+          `<span>汇总表: ${summaryData.length} 行</span><span>2 列</span>`;
+
+        // 统计结果卡片
+        document.getElementById('pivot-result-stats').style.display = '';
+        document.getElementById('pivot-result-stats').innerHTML = `
+          <div class="result-stat-card success">
+            <div class="result-stat-icon" style="background:var(--orange-soft);color:var(--orange)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+            <div class="result-stat-info"><span class="result-stat-value">${summaryData.length}</span><span class="result-stat-label">分类汇总分组数</span></div>
+          </div>
+          <div class="result-stat-card info">
+            <div class="result-stat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12h6"/></svg></div>
+            <div class="result-stat-info"><span class="result-stat-value">${data.length}</span><span class="result-stat-label">原表格总行数</span></div>
+          </div>
+        `;
+
+        document.getElementById('pivot-download').style.display = '';
+        showToast(`分组汇总分析成功！已精简合并生成 ${summaryData.length} 行指标表`);
+      } catch (err) {
+        showToast('分组汇总失败: ' + err.message, 'error');
+      }
+      hideProcessing();
+    }, 150);
+  });
+
+  document.getElementById('pivot-download').addEventListener('click', () => {
+    if (!s.resultWB) return;
+    const name = s.file ? s.file.name.replace(/\.\w+$/, '') : '透视汇总结果';
+    downloadWorkbook(s.resultWB, `${name}_分类汇总报表.xlsx`);
+    showToast('分组汇总表已成功下载');
+  });
+}
+
+// 📈 一键图表生成与可视化
+function initChart() {
+  const s = state.chart;
+  let ssChartX = null;
+  let ssChartY = null;
+
+  document.getElementById('chart-back').addEventListener('click', () => switchView('home'));
+
+  bindUploadZone(
+    document.getElementById('chart-upload'),
+    document.getElementById('chart-file'),
+    async (files) => {
+      try {
+        s.file = files[0];
+        s.workbook = await readFile(files[0]);
+        const container = document.getElementById('chart-files');
+        container.innerHTML = '';
+        container.appendChild(createFileTag(files[0].name, files[0].size, () => {
+          s.workbook = null; s.file = null;
+          if (s.chartInstance) { s.chartInstance.destroy(); s.chartInstance = null; }
+          hideChartConfig();
+        }));
+        showToast(`数据表格 "${files[0].name}" 导入成功`);
+        checkChartReady();
+      } catch (e) { showToast('文件读取失败: ' + e.message, 'error'); }
+    }
+  );
+
+  function hideChartConfig() {
+    document.getElementById('chart-config').style.display = 'none';
+    document.getElementById('chart-action-bar').style.display = 'none';
+    document.getElementById('chart-render-panel').style.display = 'none';
+    document.getElementById('chart-export-img').style.display = 'none';
+  }
+
+  function checkChartReady() {
+    if (!s.workbook) return;
+    document.getElementById('chart-config').style.display = '';
+    document.getElementById('chart-action-bar').style.display = '';
+
+    populateSelect(document.getElementById('chart-sheet'), s.workbook.SheetNames);
+    updateChartColumns();
+  }
+
+  document.getElementById('chart-sheet').addEventListener('change', updateChartColumns);
+
+  function updateChartColumns() {
+    const sheetName = document.getElementById('chart-sheet').value;
+    if (!sheetName) return;
+
+    const headers = getSheetHeaders(s.workbook, sheetName);
+
+    const xWrap = document.getElementById('chart-x-col');
+    xWrap.innerHTML = '';
+    if (ssChartX) ssChartX.destroy();
+    ssChartX = createSearchableSelect(xWrap, headers, { placeholder: '选择分类字段 (例如部门、产品)' });
+
+    const yWrap = document.getElementById('chart-y-col');
+    yWrap.innerHTML = '';
+    if (ssChartY) ssChartY.destroy();
+    // 智能猜测 Y 轴指标字段
+    let defaultYCol = headers.find(h => h.includes('金额') || h.includes('销售') || h.includes('总') || h.includes('业绩') || h.includes('count') || h.includes('price')) || headers[1] || headers[0];
+    ssChartY = createSearchableSelect(yWrap, headers, { placeholder: '选择数值分析字段 (例如营业额、销售量)' });
+  }
+
+  document.getElementById('chart-execute').addEventListener('click', () => {
+    if (!s.workbook) return;
+    if (typeof Chart === 'undefined') {
+      showToast('Chart.js 渲染引擎未成功加载，请检查网络', 'error');
+      return;
+    }
+
+    const sheetName = document.getElementById('chart-sheet').value;
+    const xCol = ssChartX ? ssChartX.value : '';
+    const yCol = ssChartY ? ssChartY.value : '';
+    const chartType = document.getElementById('chart-type').value;
+
+    if (!xCol || !yCol) {
+      showToast('您必须完整选择 X 轴与 Y 轴的映射数据列', 'error');
+      return;
+    }
+
+    const data = getSheetData(s.workbook, sheetName);
+
+    showProcessing('正在进行可视化图表渲染...', '图表正在使用 GPU 硬件加速绘制');
+
+    setTimeout(() => {
+      try {
+        // 先对数据按 X 轴列做自动分组求和汇总，这样画出来的图表才最精美具有分析意义！
+        const summary = {};
+        data.forEach(row => {
+          let xVal = row[xCol];
+          if (xVal === undefined || xVal === null || xVal === '') xVal = '未分类';
+          xVal = String(xVal).trim();
+
+          const yVal = Number(row[yCol]);
+          const num = isNaN(yVal) ? 0 : yVal;
+
+          if (summary[xVal] === undefined) summary[xVal] = 0;
+          summary[xVal] += num;
+        });
+
+        // 限制最多画 30 条数据（防止柱子密密麻麻卡死），按大小排个序
+        const summaryArray = Object.keys(summary).map(key => ({
+          label: key,
+          value: Number(summary[key].toFixed(2))
+        }));
+        summaryArray.sort((a, b) => b.value - a.value); // 降序
+
+        const topData = summaryArray.slice(0, 30);
+        const labels = topData.map(item => item.label);
+        const values = topData.map(item => item.value);
+
+        if (s.chartInstance) {
+          s.chartInstance.destroy();
+        }
+
+        // 创建图表画布
+        document.getElementById('chart-render-panel').style.display = 'flex';
+        const canvas = document.getElementById('chart-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // 主题色自适应
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const labelColor = isDark ? '#a1a8b9' : '#5b6477';
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)';
+
+        // 高颜值色彩搭配渐变
+        let backgroundColors = 'rgba(91, 95, 199, 0.75)';
+        let borderColors = 'rgba(91, 95, 199, 1)';
+
+        if (chartType === 'pie' || chartType === 'doughnut') {
+          backgroundColors = [
+            'rgba(46, 124, 246, 0.75)', 'rgba(30, 169, 124, 0.75)', 'rgba(233, 133, 13, 0.75)',
+            'rgba(142, 78, 198, 0.75)', 'rgba(6, 182, 212, 0.75)', 'rgba(236, 72, 153, 0.75)',
+            'rgba(229, 72, 77, 0.75)', 'rgba(91, 95, 199, 0.75)', 'rgba(120, 120, 120, 0.75)'
+          ];
+          borderColors = '#fff';
+        }
+
+        const isHorizontal = chartType === 'horizontalBar';
+        const actualType = isHorizontal ? 'bar' : chartType;
+        const options = {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: isHorizontal ? 'y' : 'x',
+          plugins: {
+            legend: {
+              display: chartType === 'pie' || chartType === 'doughnut',
+              labels: { color: labelColor, font: { family: 'inherit', size: 11, weight: 'bold' } }
+            },
+            tooltip: {
+              padding: 10,
+              cornerRadius: 8,
+              font: { family: 'inherit' }
+            }
+          },
+          scales: (chartType === 'pie' || chartType === 'doughnut') ? {} : {
+            x: {
+              grid: { color: gridColor },
+              ticks: { color: labelColor, font: { family: 'inherit', size: 10 } }
+            },
+            y: {
+              grid: { color: gridColor },
+              ticks: { color: labelColor, font: { family: 'inherit', size: 10 } }
+            }
+          }
+        };
+
+        s.chartInstance = new Chart(ctx, {
+          type: actualType,
+          data: {
+            labels: labels,
+            datasets: [{
+              label: `${yCol} (汇总)`,
+              data: values,
+              backgroundColor: backgroundColors,
+              borderColor: borderColors,
+              borderWidth: 1.5,
+              borderRadius: chartType === 'bar' || isHorizontal ? 6 : 0,
+              hoverOffset: 12
+            }]
+          },
+          options: options
+        });
+
+        document.getElementById('chart-export-img').style.display = '';
+        showToast('高颜值数据可视化图表已成功生成！');
+      } catch (err) {
+        showToast('图表绘制失败: ' + err.message, 'error');
+      }
+      hideProcessing();
+    }, 150);
+  });
+
+  // 保存图片
+  document.getElementById('chart-export-img').addEventListener('click', () => {
+    const canvas = document.getElementById('chart-canvas');
+    if (!canvas) return;
+
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    const baseName = s.file ? s.file.name.replace(/\.\w+$/, '') : '图表';
+    a.download = `${baseName}_数据分析大屏.png`;
+    a.click();
+    showToast('动态图表已成功保存为超清 PNG 图片');
+  });
+}
+
 // ==================== 初始化 ====================
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
@@ -1410,4 +2461,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initClean();
   initMerge();
   initDiff();
+  initMask();
+  initSplit();
+  initFormula();
+  initPivot();
+  initChart();
 });
