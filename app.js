@@ -486,14 +486,18 @@ function bindUploadZone(zoneEl, fileInputEl, onFile) {
     e.preventDefault();
     zoneEl.classList.remove('drag-over');
     if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      onFile(e.dataTransfer.files);
+      // 转为普通 Array，防止拖放后 dataTransfer 失效
+      onFile(Array.from(e.dataTransfer.files));
     }
   });
   fileInputEl.addEventListener('change', () => {
     if (fileInputEl.files && fileInputEl.files.length > 0) {
-      onFile(fileInputEl.files);
+      // 关键修复：先把 FileList 快照为普通 Array，再清空 input
+      // 浏览器在 value='' 时会清空 FileList，导致异步 await 后 files[0] 变 undefined
+      const snapshot = Array.from(fileInputEl.files);
+      fileInputEl.value = ''; // 先清空，允许重复选同一文件
+      onFile(snapshot);       // 传入稳定的 Array，不受 input 清空影响
     }
-    fileInputEl.value = '';
   });
 }
 
