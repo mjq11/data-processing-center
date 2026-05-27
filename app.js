@@ -469,16 +469,30 @@ function switchView(view) {
 
 // ==================== 拖拽上传通用绑定 ====================
 function bindUploadZone(zoneEl, fileInputEl, onFile) {
-  zoneEl.addEventListener('click', () => fileInputEl.click());
+  // 阻止 input 点击冒泡，避免重复唤起选择器
+  fileInputEl.addEventListener('click', e => e.stopPropagation());
+  
+  zoneEl.addEventListener('click', (e) => {
+    // 过滤掉已经上传文件的标签上的移除点击
+    if (e.target.closest('.file-tag-remove') || e.target.closest('.file-tag')) {
+      return;
+    }
+    fileInputEl.click();
+  });
+  
   zoneEl.addEventListener('dragover', e => { e.preventDefault(); zoneEl.classList.add('drag-over'); });
   zoneEl.addEventListener('dragleave', () => zoneEl.classList.remove('drag-over'));
   zoneEl.addEventListener('drop', e => {
     e.preventDefault();
     zoneEl.classList.remove('drag-over');
-    if (e.dataTransfer.files.length > 0) onFile(e.dataTransfer.files);
+    if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      onFile(e.dataTransfer.files);
+    }
   });
   fileInputEl.addEventListener('change', () => {
-    if (fileInputEl.files.length > 0) onFile(fileInputEl.files);
+    if (fileInputEl.files && fileInputEl.files.length > 0) {
+      onFile(fileInputEl.files);
+    }
     fileInputEl.value = '';
   });
 }
