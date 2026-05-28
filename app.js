@@ -51,15 +51,51 @@ function formatSize(bytes) {
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 }
 
-/** 读取文件为 SheetJS Workbook */
+/** 检测字节数组是否包含非 UTF-8 编码的中文（GBK/GB2312 等） */
+function detectNonUtf8(uint8arr) {
+  // 方法：用 UTF-8 解码后检查是否出现替换字符 U+FFFD，这说明存在无法用 UTF-8 解释的字节
+  const text = new TextDecoder('utf-8', { fatal: false }).decode(uint8arr);
+  // 如果出现替换字符，或者出现典型的 GBK 被误读为 Latin-1 的乱码模式，则认为是 GBK
+  if (text.includes('\uFFFD')) return true;
+  // 额外检测：如果文件开头几百个字节中存在高字节对（GBK 双字节范围 0x81-0xFE），
+  // 但 UTF-8 解码后无法对应有效中文字符，也判定为 GBK
+  const sample = uint8arr.slice(0, Math.min(4096, uint8arr.length));
+  let highByteCount = 0;
+  for (let i = 0; i < sample.length; i++) {
+    if (sample[i] >= 0x81 && sample[i] <= 0xFE) highByteCount++;
+  }
+  // 高字节占比超过 10% 且无 BOM，大概率是 GBK 编码
+  if (highByteCount > sample.length * 0.1 && !(sample[0] === 0xEF && sample[1] === 0xBB && sample[2] === 0xBF)) {
+    // 再次验证：用 GBK 解码看是否能得到合理中文
+    try {
+      const gbkText = new TextDecoder('gbk', { fatal: true }).decode(sample);
+      // 检查是否包含常见中文字符范围
+      if (/[\u4e00-\u9fff]/.test(gbkText)) return true;
+    } catch (e) { /* GBK 解码也失败，说明不是 GBK */ }
+  }
+  return false;
+}
+
+/** 读取文件为 SheetJS Workbook（自动处理 CSV 的 GBK/GB2312 编码） */
 function readFile(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = e => {
       try {
         const data = new Uint8Array(e.target.result);
-        const wb = XLSX.read(data, { type: 'array' });
-        resolve(wb);
+        const ext = (file.name || '').split('.').pop().toLowerCase();
+
+        // 对 CSV 文件进行编码检测
+        if (ext === 'csv' && detectNonUtf8(data)) {
+          // 使用 GBK 解码后以字符串形式传给 SheetJS
+          const gbkDecoder = new TextDecoder('gbk');
+          const csvText = gbkDecoder.decode(data);
+          const wb = XLSX.read(csvText, { type: 'string' });
+          resolve(wb);
+        } else {
+          const wb = XLSX.read(data, { type: 'array' });
+          resolve(wb);
+        }
       } catch (err) { reject(err); }
     };
     reader.onerror = reject;
